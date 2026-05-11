@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4efe8;
+  --foreground: #1c1a18;
+  --ink: #1c1a18;
+  --muted: #6a5f55;
+  --panel: #fffdf9;
+  --panel-strong: #efe7dc;
+  --line: #e1d6c8;
+  --accent: #0f766e;
+  --accent-strong: #0b5d56;
+  --signal: #b45309;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-panel: var(--panel);
+  --color-panel-strong: var(--panel-strong);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-signal: var(--signal);
+  --font-sans: var(--font-ui);
+  --font-serif: var(--font-editorial);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ui), "Segoe UI", sans-serif;
+}
+
+.paper-hero {
+  background: radial-gradient(
+      circle at top left,
+      rgba(180, 83, 9, 0.12),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(15, 118, 110, 0.16),
+      transparent 50%
+    ),
+    linear-gradient(135deg, #f8f3ec 0%, #f4efe8 100%);
+}
+
+.soft-shadow {
+  box-shadow: 0 30px 70px rgba(40, 31, 22, 0.12);
+}
+
+.rise-in {
+  animation: rise-in 900ms ease-out both;
+}
+
+@keyframes rise-in {
+  0% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
