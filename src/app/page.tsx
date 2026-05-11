@@ -1,5 +1,6 @@
 "use client";
 
+import type { ChangeEvent } from "react";
 import { useMemo, useRef, useState } from "react";
 
 type MemoFinding = {
@@ -16,6 +17,11 @@ type MemoPayload = {
   findings: MemoFinding[];
   overallRiskScore?: number;
 };
+
+const REPORT_LOGO = `
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#0f766e" fill-rule="evenodd"/>
+</svg>`;
 
 const SAMPLE_MEMO: MemoPayload = {
   narrative: [
@@ -45,11 +51,440 @@ const SAMPLE_MEMO: MemoPayload = {
   overallRiskScore: undefined,
 };
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function safeFilename(value: string) {
+  const normalized = value
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[^a-zA-Z0-9\- _]+/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return normalized.length > 0 ? normalized : "contract-report";
+}
+
+function formatDateTime(value: Date) {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(value);
+}
+
+function riskLabel(score?: number) {
+  if (score === undefined || score === null || Number.isNaN(Number(score))) {
+    return "Risk not scored";
+  }
+
+  const numericScore = Number(score);
+  if (numericScore >= 6.5) {
+    return "High risk";
+  }
+  if (numericScore >= 3.5) {
+    return "Moderate risk";
+  }
+  return "Lower risk";
+}
+
+function buildReportHtml(input: {
+  contractTitle: string;
+  contractText: string;
+  memo: MemoPayload;
+  fallback: boolean;
+}) {
+  const generatedAt = formatDateTime(new Date());
+  const title = input.contractTitle.trim() || "Contract Review";
+  const riskScore =
+    input.memo.overallRiskScore === undefined || input.memo.overallRiskScore === null
+      ? "-"
+      : Number(input.memo.overallRiskScore).toFixed(1);
+
+  const narrative = input.memo.narrative
+    .map((item) => `<p>${escapeHtml(item)}</p>`)
+    .join("");
+
+  const summary = input.memo.summary
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join("");
+
+  const findings = input.memo.findings
+    .map(
+      (item) => `
+        <article class="finding">
+          <div class="finding-head">
+            <span>${escapeHtml(item.id)}</span>
+            <span class="badge badge-${item.risk.toLowerCase()}">${escapeHtml(item.risk)}</span>
+          </div>
+          <h3>${escapeHtml(item.category)}</h3>
+          <p class="label">Evidence</p>
+          <p>${escapeHtml(item.evidence)}</p>
+          <p class="label">Recommendation</p>
+          <p>${escapeHtml(item.recommendation)}</p>
+        </article>
+      `
+    )
+    .join("");
+
+  const contractText = input.contractText.trim().length > 0
+    ? `<pre>${escapeHtml(input.contractText)}</pre>`
+    : `<p class="empty">No contract text was included in the analysis input.</p>`;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(title)} - GeminEYE Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --background: #f4efe8;
+        --foreground: #1c1a18;
+        --ink: #1c1a18;
+        --muted: #6a5f55;
+        --panel: #fffdf9;
+        --panel-strong: #efe7dc;
+        --line: #e1d6c8;
+        --accent: #0f766e;
+        --accent-strong: #0b5d56;
+        --signal: #b45309;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+        font-family: "Space Grotesk", "Segoe UI", sans-serif;
+      }
+
+      .page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px 24px 48px;
+      }
+
+      .hero {
+        background: radial-gradient(circle at top left, rgba(180, 83, 9, 0.12), transparent 45%),
+          radial-gradient(circle at top right, rgba(15, 118, 110, 0.16), transparent 50%),
+          linear-gradient(135deg, #f8f3ec 0%, #f4efe8 100%);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: 0 30px 70px rgba(40, 31, 22, 0.12);
+        padding: 28px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--muted);
+        margin-bottom: 18px;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 253, 249, 0.92);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 12px 24px rgba(40, 31, 22, 0.08);
+      }
+
+      .brand-mark svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      h1, h2, h3 {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 42px;
+        line-height: 1;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.7;
+        max-width: 72ch;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .meta-card, .section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 18px 40px rgba(40, 31, 22, 0.06);
+      }
+
+      .meta-card {
+        padding: 16px;
+      }
+
+      .meta-card .label, .section .label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .meta-card .value {
+        font-size: 18px;
+        line-height: 1.4;
+        color: var(--ink);
+      }
+
+      .section {
+        margin-top: 18px;
+        padding: 22px;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .section-header p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 6px 12px;
+        border: 1px solid var(--line);
+        background: var(--panel-strong);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .badge-high { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+      .badge-medium { color: #92400e; background: #fffbeb; border-color: #fde68a; }
+      .badge-low { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
+
+      .section-body p, .section-body li {
+        color: var(--foreground);
+        line-height: 1.7;
+      }
+
+      .section-body ul {
+        margin: 0;
+        padding-left: 20px;
+      }
+
+      .findings {
+        display: grid;
+        gap: 14px;
+      }
+
+      .finding {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 18px;
+        background: #fff;
+      }
+
+      .finding-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .finding h3 {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      .finding .label {
+        margin-top: 10px;
+        margin-bottom: 6px;
+      }
+
+      .finding p {
+        margin: 0;
+        color: var(--foreground);
+        line-height: 1.7;
+      }
+
+      .contract-text {
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 18px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+        max-height: 720px;
+        overflow: auto;
+      }
+
+      .empty {
+        color: var(--muted);
+        font-style: italic;
+      }
+
+      .footer {
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.7;
+      }
+
+      @media print {
+        body { background: #fff; }
+        .page { max-width: none; padding: 0; }
+        .hero, .meta-card, .section, .finding, .contract-text { box-shadow: none; }
+      }
+
+      @media (max-width: 900px) {
+        .meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        h1 { font-size: 34px; }
+      }
+
+      @media (max-width: 640px) {
+        .page { padding: 20px 14px 34px; }
+        .hero, .section { padding: 18px; border-radius: 22px; }
+        .meta-grid { grid-template-columns: 1fr; }
+        .section-header { flex-direction: column; }
+        .finding h3 { font-size: 24px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="brand">
+          <div class="brand-mark">${REPORT_LOGO}</div>
+          <div>
+            <div style="font-size:11px; letter-spacing:0.22em; text-transform:uppercase; color:var(--muted);">GeminEYE report</div>
+            <div style="font-size:15px; color:var(--ink); font-weight:600;">AI contract risk review</div>
+          </div>
+        </div>
+        <h1>${escapeHtml(title)}</h1>
+        <div class="subtitle">${escapeHtml(
+          input.fallback
+            ? "This report captures the Gemini response from the fallback analysis mode. Review it as a working draft and verify the contract text before relying on it."
+            : "This report captures the Gemini response for the analyzed contract, formatted in the same editorial style as the app and ready to share or print."
+        )}</div>
+
+        <div class="meta-grid">
+          <div class="meta-card">
+            <span class="label">Generated</span>
+            <div class="value">${escapeHtml(generatedAt)}</div>
+          </div>
+          <div class="meta-card">
+            <span class="label">Risk score</span>
+            <div class="value">${riskScore}</div>
+          </div>
+          <div class="meta-card">
+            <span class="label">Risk label</span>
+            <div class="value">${escapeHtml(riskLabel(input.memo.overallRiskScore))}</div>
+          </div>
+          <div class="meta-card">
+            <span class="label">Contract title</span>
+            <div class="value">${escapeHtml(title)}</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>Narrative</h2>
+            <p>Gemini's high-level explanation of the contract review.</p>
+          </div>
+          <span class="badge">${escapeHtml(riskLabel(input.memo.overallRiskScore))}</span>
+        </div>
+        <div class="section-body">${narrative || '<p class="empty">No narrative was returned.</p>'}</div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>Summary</h2>
+            <p>Condensed takeaways pulled from the Gemini reply.</p>
+          </div>
+        </div>
+        <div class="section-body">
+          <ul>${summary || '<li class="empty">No summary items were returned.</li>'}</ul>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>Findings</h2>
+            <p>Detailed risk items, evidence, and recommendations.</p>
+          </div>
+        </div>
+        <div class="findings">${findings || '<p class="empty">No findings were returned.</p>'}</div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>Contract text appendix</h2>
+            <p>The full contract text used for analysis. Kept in the report so you can share context without pasting it into the body above.</p>
+          </div>
+        </div>
+        <div class="contract-text">${contractText}</div>
+      </section>
+
+      <div class="footer">
+        GeminEYE is provided for informational support only and does not replace legal advice. This report should be reviewed by a qualified professional before use in business or legal decisions.
+      </div>
+    </main>
+  </body>
+</html>`;
+}
+
 export default function Home() {
   const [contractTitle, setContractTitle] = useState("");
   const [contractText, setContractText] = useState("");
   const [memo, setMemo] = useState<MemoPayload>(SAMPLE_MEMO);
   const [analyzedContractTitle, setAnalyzedContractTitle] = useState("");
+  const [hasAnalysisResult, setHasAnalysisResult] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fileStatus, setFileStatus] = useState<string | null>(null);
@@ -98,6 +533,7 @@ export default function Home() {
     setContractText("");
     setMemo(SAMPLE_MEMO);
     setAnalyzedContractTitle("");
+    setHasAnalysisResult(false);
     setError(null);
     setFileStatus(null);
     setIsExtracting(false);
@@ -149,6 +585,7 @@ export default function Home() {
       if (data.contractTitle) {
         setAnalyzedContractTitle(data.contractTitle);
       }
+      setHasAnalysisResult(true);
       if (typeof data.keyLoaded === "boolean") {
         setKeyLoaded(data.keyLoaded);
       }
@@ -165,7 +602,28 @@ export default function Home() {
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const downloadReport = () => {
+    const reportContractTitle = analyzedContractTitle.trim() || contractTitle.trim() || "Contract Review";
+    const reportHtml = buildReportHtml({
+      contractTitle: reportContractTitle,
+      contractText,
+      memo,
+      fallback: isFallback,
+    });
+    const blob = new Blob([reportHtml], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${safeFilename(reportContractTitle)}-gemineye-report.html`;
+    anchor.rel = "noopener noreferrer";
+    anchor.style.display = "none";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
       return;
@@ -375,9 +833,19 @@ export default function Home() {
                   Investigator memo
                 </h2>
               </div>
-              <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${riskScoreTone}`}>
-                {riskScoreLabel}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${riskScoreTone}`}>
+                  {riskScoreLabel}
+                </span>
+                {hasAnalysisResult ? (
+                  <button
+                    onClick={downloadReport}
+                    className="rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent"
+                  >
+                    Download report
+                  </button>
+                ) : null}
+              </div>
             </div>
             {isFallback ? (
               <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">
