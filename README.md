@@ -32,7 +32,7 @@ GeminEYE is provided for informational and educational purposes only. It does no
 
 ## 🌐 Live Demo
 
-**[🔗 View Live](https://gemineye-production.up.railway.app/)**
+**[🔗 View Live](https://gemineye-v1.up.railway.app)**
 
 ---
 
@@ -88,6 +88,7 @@ Results are formatted as an investigator-style memo:
 - Node.js 18+
 - npm or yarn
 - AI/ML API account with Gemini access
+- Gemini API Key (optional, for direct Gemini linking) refer to #hackathon-disclosure above.
 
 ### Installation
 
