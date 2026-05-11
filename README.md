@@ -88,7 +88,7 @@ Results are formatted as an investigator-style memo:
 - Node.js 18+
 - npm or yarn
 - AI/ML API account with Gemini access
-- Gemini API Key (optional, for direct Gemini linking) refer to #hackathon-disclosure above.
+- Gemini API Key (optional, for direct Gemini linking) refer to [#hackathon-disclosure](https://github.com/monsiu/GeminEYE#hackathon-disclosure) above.
 
 ### Installation
 
