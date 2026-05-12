@@ -825,18 +825,21 @@ export default function Home() {
         fallback: resolvedFallback,
       });
 
-      saveReportToStorage({
-        id: `${Date.now()}`,
-        title: resolvedContractTitle,
-        score:
-          resolvedMemo.overallRiskScore === undefined || resolvedMemo.overallRiskScore === null
-            ? null
-            : Number(resolvedMemo.overallRiskScore),
-        label: riskLabel(resolvedMemo.overallRiskScore),
-        createdAt: new Date().toISOString(),
-        findings: resolvedMemo.findings,
-        html: generatedReportHtml,
-      });
+      // Do not persist fallback/demo reports to the dashboard storage
+      if (!resolvedFallback) {
+        saveReportToStorage({
+          id: `${Date.now()}`,
+          title: resolvedContractTitle,
+          score:
+            resolvedMemo.overallRiskScore === undefined || resolvedMemo.overallRiskScore === null
+              ? null
+              : Number(resolvedMemo.overallRiskScore),
+          label: riskLabel(resolvedMemo.overallRiskScore),
+          createdAt: new Date().toISOString(),
+          findings: resolvedMemo.findings,
+          html: generatedReportHtml,
+        });
+      }
 
       setHasAnalysisResult(true);
       if (typeof data.keyLoaded === "boolean") {
@@ -881,6 +884,10 @@ export default function Home() {
   }
 
   const downloadReport = () => {
+    if (isFallback) {
+      setError("Demo fallback reports cannot be downloaded or saved to the dashboard.");
+      return;
+    }
     const reportContractTitle = analyzedContractTitle.trim() || contractTitle.trim() || "Contract Review";
     const reportHtml = buildReportHtml({
       contractTitle: reportContractTitle,
@@ -1124,22 +1131,37 @@ export default function Home() {
                 {hasAnalysisResult ? (
                   <button
                     onClick={downloadReport}
-                    className="rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent"
+                    disabled={isFallback}
+                    aria-disabled={isFallback}
+                    className={`rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent ${
+                      isFallback ? "opacity-50 pointer-events-none" : ""
+                    }`}
                   >
                     Download report
                   </button>
                 ) : null}
-                <a
-                  href="/dashboard"
-                  className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent"
-                >
-                  View Dashboard
-                </a>
+                {isFallback ? (
+                  <button
+                    disabled
+                    aria-disabled
+                    className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink opacity-50 pointer-events-none"
+                  >
+                    View Dashboard
+                  </button>
+                ) : (
+                  <a
+                    href="/dashboard"
+                    className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent"
+                  >
+                    View Dashboard
+                  </a>
+                )}
               </div>
             </div>
             {isFallback ? (
               <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">
-                Demo fallback: this memo is sample text shown because live analysis failed.
+                <div>Demo fallback: this memo is sample text shown because live analysis failed.</div>
+                <div className="mt-1 font-normal text-[11px] normal-case text-amber-900">This demo report cannot be saved to the dashboard or downloaded.</div>
               </div>
             ) : null}
             <div className="mt-3 rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink">
