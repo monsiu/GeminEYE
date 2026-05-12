@@ -186,6 +186,37 @@ html[data-theme="dark"] .button-pop:hover {
   border: 1px solid color-mix(in srgb, var(--color-accent) 30%, var(--line));
 }
 
+/* Inverse button: dark background in light mode, theme-aware hover that
+   lightens in light mode and darkens subtly in dark mode. Used for the
+   high-contrast "Run analysis" action so hover behavior matches themes. */
+.btn-inverse {
+  background: var(--ink);
+  color: var(--panel);
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, var(--line));
+  transition: background 160ms ease-out, color 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out;
+}
+
+/* Light theme: when the button is dark, hover should make it a lighter shade */
+html[data-theme="light"] .btn-inverse:hover {
+  background: color-mix(in srgb, var(--panel) 82%, var(--ink) 18%);
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--ink) 24%, var(--line));
+  box-shadow: 0 10px 26px rgba(0,0,0,0.08);
+}
+
+/* Dark theme: keep the same dark-mode hover feel (slightly brighter accent) */
+html[data-theme="dark"] .btn-inverse {
+  background: color-mix(in srgb, var(--color-accent-strong) 28%, var(--panel) 72%);
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--color-accent-strong) 44%, var(--line));
+}
+
+html[data-theme="dark"] .btn-inverse:hover {
+  background: color-mix(in srgb, var(--color-accent-strong) 38%, var(--panel) 62%);
+  border-color: color-mix(in srgb, var(--color-accent-strong) 58%, var(--line));
+  box-shadow: 0 12px 34px rgba(0,0,0,0.36);
+}
+
 .btn-primary.button-pop:hover {
   background: color-mix(in srgb, var(--color-accent) 30%, var(--panel) 70%);
   color: var(--ink);

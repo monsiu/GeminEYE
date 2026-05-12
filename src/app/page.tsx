@@ -972,7 +972,7 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={runAnalysis}
-                  className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-panel transition hover:bg-black"
+                  className="rounded-full btn-inverse button-pop px-5 py-2.5 text-sm font-semibold"
                 >
                   {isLoading ? "Analyzing..." : "Run analysis"}
                 </button>
