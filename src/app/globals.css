@@ -58,6 +58,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  transition: background 280ms ease, color 220ms ease;
 }
 
 html[data-theme="dark"] body {
@@ -79,6 +80,7 @@ html[data-theme="dark"] body {
       transparent 50%
     ),
     linear-gradient(135deg, #f8f3ec 0%, #f4efe8 100%);
+  transition: background 280ms ease, box-shadow 220ms ease, border-color 220ms ease;
 }
 
 html[data-theme="dark"] .paper-hero {
@@ -150,6 +152,10 @@ html[data-theme="light"] {
   box-shadow: 0 30px 70px rgba(40, 31, 22, 0.12);
 }
 
+:where(.bg-white, .bg-panel, .bg-panel-strong, .border-line, .text-ink, .text-muted, .paper-hero, .soft-shadow, .btn-primary, .btn-inverse, .analysis-done-button, input, textarea, select, summary) {
+  transition: background-color 220ms ease, background 220ms ease, color 220ms ease, border-color 220ms ease, box-shadow 220ms ease, opacity 220ms ease, transform 200ms ease;
+}
+
 .rise-in {
   animation: rise-in 900ms ease-out both;
 }
@@ -217,6 +223,19 @@ html[data-theme="dark"] .button-pop:hover {
   border-color: color-mix(in srgb, var(--color-accent-strong) 56%, var(--line));
 }
 
+html,
+body,
+.paper-hero,
+.soft-shadow,
+.bg-white,
+.bg-panel,
+.bg-panel-strong,
+.btn-primary,
+.btn-inverse,
+.analysis-done-button {
+  backface-visibility: hidden;
+}
+
 /* Primary button that uses a muted, theme-aware accent background to blend with page */
 .btn-primary {
   background: color-mix(in srgb, var(--color-accent) 20%, var(--panel) 80%);
@@ -260,6 +279,12 @@ html[data-theme="dark"] .btn-inverse:hover {
   background: color-mix(in srgb, var(--color-accent) 30%, var(--panel) 70%);
   color: var(--ink);
   border-color: color-mix(in srgb, var(--color-accent) 44%, var(--line));
+}
+
+html[data-theme="dark"] .btn-primary.button-pop:hover,
+html[data-theme="dark"] .btn-inverse:hover,
+html[data-theme="dark"] .analysis-done-button:hover {
+  transform: translateY(-1px) scale(1.02);
 }
 
 html[data-theme="dark"] .btn-primary {
