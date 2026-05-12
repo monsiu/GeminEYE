@@ -1002,10 +1002,10 @@ export default function Home() {
                   }`}
                 >
                   {keyLoaded === null
-                    ? "Key unknown"
+                    ? "Not checked"
                     : keyLoaded
-                    ? "Key loaded"
-                    : "Key missing"}
+                    ? "Ready"
+                    : "Missing"}
                 </span>
                 {isFallback ? (
                   <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-amber-700">
