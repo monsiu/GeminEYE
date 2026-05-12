@@ -277,6 +277,10 @@ export default function DashboardPage() {
           )}
         </section>
 
+        <div className="mt-8 rounded-2xl border border-line bg-panel px-5 py-4 text-xs text-muted">
+          GeminEYE is provided for informational support only and does not replace legal advice. This report should be reviewed by a qualified professional before use in business or legal decisions.
+        </div>
+
         {showUndo && deletedReport ? (
           <div className="fixed right-6 bottom-6 z-50 flex items-center gap-4 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar">
             <style dangerouslySetInnerHTML={{ __html: SNACKBAR_CSS }} />
