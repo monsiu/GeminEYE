@@ -803,6 +803,13 @@ export default function Home() {
     }
   };
 
+  const resetAnalysis = () => {
+    setHasAnalysisResult(false);
+    setAnalyzedContractTitle("");
+    setError(null);
+    setIsFallback(false);
+  };
+
   const runAnalysis = async () => {
     if (!contractTitle.trim()) {
       setError("Enter a contract title.");
@@ -1000,12 +1007,10 @@ export default function Home() {
                 </span>
               </h2>
               <h1 className="font-serif text-4xl text-ink md:text-5xl">
-                Review contracts like an investigator.
+                Review contracts with an investigator's eye.
               </h1>
               <p className="max-w-xl text-base text-muted">
-                Upload a PDF or DOCX, or paste text. The system extracts clauses,
-                scores risk, and delivers a structured memo with evidence and
-                negotiation-ready actions.
+                Upload a PDF or DOCX, or paste contract text directly. GeminEYE turns dense agreements into a clear risk memo by extracting key clauses, scoring the overall picture, and highlighting issues across liability, indemnity, privacy, termination, intellectual property, and venue. You get evidence-backed findings and practical next steps you can use right away.
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <button
@@ -1020,39 +1025,20 @@ export default function Home() {
                 >
                   {isLoading ? "Analyzing..." : hasAnalysisResult ? "Analysis Done" : "Run analysis"}
                 </button>
+                {hasAnalysisResult ? (
+                  <button
+                    onClick={resetAnalysis}
+                    className="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                  >
+                    Run again
+                  </button>
+                ) : null}
                 <button
                   onClick={resetAll}
                   className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink"
                 >
                   Reset
                 </button>
-                <span className="text-xs uppercase tracking-[0.2em] text-muted">
-                  Gemini API
-                </span>
-                <span
-                  className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
-                    apiStatus === "checking"
-                      ? "border-line bg-panel text-muted"
-                      : apiStatus === "unknown"
-                      ? "border-line bg-panel text-muted"
-                      : apiStatus === "configured"
-                      ? "border-slate-200 bg-slate-50 text-slate-700"
-                      : "border-stone-200 bg-stone-50 text-stone-700"
-                  }`}
-                >
-                  {apiStatus === "checking"
-                    ? "Checking"
-                    : apiStatus === "unknown"
-                    ? "Not checked"
-                    : apiStatus === "configured"
-                    ? "Configured"
-                    : "Missing"}
-                </span>
-                {isFallback ? (
-                  <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-amber-700">
-                    Fallback
-                  </span>
-                ) : null}
               </div>
               <div className="grid grid-cols-2 gap-3 text-xs text-muted md:grid-cols-3">
                 {["Liability", "Indemnity", "Data privacy", "Termination", "IP", "Venue"].map(
@@ -1073,9 +1059,30 @@ export default function Home() {
                 <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-muted">
                   Intake
                 </h2>
-                <span className="rounded-full bg-panel-strong px-3 py-1 text-xs text-muted">
-                  Ready
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs uppercase tracking-[0.2em] text-muted">
+                    Gemini API
+                  </span>
+                  <span
+                    className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
+                      apiStatus === "checking"
+                        ? "border-line bg-panel text-muted"
+                        : apiStatus === "unknown"
+                        ? "border-line bg-panel text-muted"
+                        : apiStatus === "configured"
+                        ? "border-slate-200 bg-slate-50 text-slate-700"
+                        : "border-stone-200 bg-stone-50 text-stone-700"
+                    }`}
+                  >
+                    {apiStatus === "checking"
+                      ? "Checking"
+                      : apiStatus === "unknown"
+                      ? "Not checked"
+                      : apiStatus === "configured"
+                      ? "Configured"
+                      : "Missing"}
+                  </span>
+                </div>
               </div>
               <div className="mt-4 grid gap-4">
                 <label className="flex flex-col gap-2 text-sm font-medium text-ink">
@@ -1139,21 +1146,25 @@ export default function Home() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
-          <div className="flex flex-col rounded-3xl border border-line bg-panel p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-ink">
-                Extracted preview
-              </h2>
-              <span className="text-xs text-muted">
-                {contractText.length.toLocaleString()} chars
-              </span>
-            </div>
+          <details className="group flex flex-col rounded-3xl border border-line bg-panel p-6" open>
+            <summary className="cursor-pointer list-none text-base font-semibold text-ink">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-2">
+                  <span aria-hidden="true" className="text-xs text-muted group-open:hidden">▶</span>
+                  <span aria-hidden="true" className="hidden text-xs text-muted group-open:inline">▼</span>
+                  Extracted preview
+                </span>
+                <span className="text-xs text-muted">
+                  {contractText.length.toLocaleString()} chars
+                </span>
+              </div>
+            </summary>
             <pre className="mt-4 flex-1 overflow-y-auto whitespace-pre-wrap rounded-2xl border border-line bg-white p-4 text-xs text-muted">
               {contractText.trim().length > 0
                 ? contractText
                 : "Upload a contract to preview extracted text."}
             </pre>
-          </div>
+          </details>
 
           <div className="rounded-3xl border border-line bg-panel p-6">
             <div className="flex items-center justify-between">
