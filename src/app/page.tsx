@@ -165,7 +165,7 @@ function buildReportHtml(input: {
     : `<p class="empty">No contract text was included in the analysis input.</p>`;
 
   return `<!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -173,6 +173,21 @@ function buildReportHtml(input: {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      (function () {
+        try {
+          var storedTheme = window.localStorage.getItem('gemineye-theme');
+          var theme = storedTheme === 'light' || storedTheme === 'dark'
+            ? storedTheme
+            : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.style.colorScheme = theme;
+        } catch (error) {
+          document.documentElement.dataset.theme = 'light';
+          document.documentElement.style.colorScheme = 'light';
+        }
+      })();
+    </script>
     <style>
       :root {
         --background: #f4efe8;
@@ -185,6 +200,70 @@ function buildReportHtml(input: {
         --accent: #0f766e;
         --accent-strong: #0b5d56;
         --signal: #b45309;
+      }
+
+      html[data-theme="dark"] {
+        --background: #0f1418;
+        --foreground: #f4efe8;
+        --ink: #f8f3ec;
+        --muted: #b6aa9e;
+        --panel: #151d22;
+        --panel-strong: #1d2830;
+        --line: #31404a;
+        --accent: #2aa198;
+        --accent-strong: #4bc7bd;
+        --signal: #f59e0b;
+      }
+
+      html[data-theme="dark"] body {
+        background:
+          radial-gradient(circle at top left, rgba(42, 161, 152, 0.22), transparent 32%),
+          radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 30%),
+          linear-gradient(180deg, #0f1418 0%, #0b1014 100%);
+      }
+
+      html[data-theme="dark"] .hero {
+        background:
+          radial-gradient(circle at top left, rgba(42, 161, 152, 0.22), transparent 36%),
+          radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 32%),
+          linear-gradient(135deg, rgba(21, 29, 34, 0.96) 0%, rgba(13, 18, 22, 0.98) 100%);
+      }
+
+      html[data-theme="dark"] .meta-card,
+      html[data-theme="dark"] .section,
+      html[data-theme="dark"] .finding,
+      html[data-theme="dark"] .contract-text {
+        background: var(--panel);
+      }
+
+      html[data-theme="dark"] .finding {
+        background: #10161b;
+      }
+
+      html[data-theme="dark"] .brand-mark {
+        background: rgba(17, 24, 29, 0.92);
+      }
+
+      html[data-theme="dark"] .toggle-button {
+        background: rgba(21, 29, 34, 0.96);
+      }
+
+      html[data-theme="dark"] .badge-high {
+        color: #fecaca;
+        background: rgba(127, 29, 29, 0.28);
+        border-color: rgba(220, 38, 38, 0.35);
+      }
+
+      html[data-theme="dark"] .badge-medium {
+        color: #fde68a;
+        background: rgba(146, 64, 14, 0.28);
+        border-color: rgba(245, 158, 11, 0.35);
+      }
+
+      html[data-theme="dark"] .badge-low {
+        color: #a7f3d0;
+        background: rgba(4, 120, 87, 0.28);
+        border-color: rgba(16, 185, 129, 0.35);
       }
 
       * { box-sizing: border-box; }
@@ -200,6 +279,45 @@ function buildReportHtml(input: {
         max-width: 980px;
         margin: 0 auto;
         padding: 32px 24px 48px;
+        position: relative;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 20;
+      }
+
+      .toggle-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: rgba(255, 253, 249, 0.96);
+        color: var(--ink);
+        box-shadow: 0 14px 28px rgba(40, 31, 22, 0.16);
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .toggle-button:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .toggle-button .icon {
+        font-size: 14px;
+        line-height: 1;
+      }
+
+      .toggle-button .label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
       .hero {
@@ -447,6 +565,12 @@ function buildReportHtml(input: {
     </style>
   </head>
   <body>
+    <div class="theme-toggle">
+      <button class="toggle-button" type="button" id="themeToggle" aria-label="Toggle report theme">
+        <span class="icon" id="themeToggleIcon" aria-hidden="true">☾</span>
+        <span class="label" id="themeToggleLabel">Dark mode</span>
+      </button>
+    </div>
     <main class="page">
       <section class="hero">
         <div class="brand">
@@ -530,6 +654,33 @@ function buildReportHtml(input: {
         GeminEYE is provided for informational support only and does not replace legal advice. This report should be reviewed by a qualified professional before use in business or legal decisions.
       </div>
     </main>
+    <script>
+      (function () {
+        var button = document.getElementById('themeToggle');
+        var label = document.getElementById('themeToggleLabel');
+        var icon = document.getElementById('themeToggleIcon');
+
+        function sync(theme) {
+          var isDark = theme === 'dark';
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.style.colorScheme = theme;
+          if (label) label.textContent = isDark ? 'Light mode' : 'Dark mode';
+          if (icon) icon.textContent = isDark ? '☀' : '☾';
+          if (button) button.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+        }
+
+        button && button.addEventListener('click', function () {
+          var current = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+          var next = current === 'dark' ? 'light' : 'dark';
+          try {
+            window.localStorage.setItem('gemineye-theme', next);
+          } catch (error) {}
+          sync(next);
+        });
+
+        sync(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+      })();
+    </script>
   </body>
 </html>`;
 }
