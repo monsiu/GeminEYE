@@ -13,6 +13,19 @@
   --signal: #b45309;
 }
 
+html[data-theme="dark"] {
+  --background: #0f1418;
+  --foreground: #f4efe8;
+  --ink: #f8f3ec;
+  --muted: #b6aa9e;
+  --panel: #151d22;
+  --panel-strong: #1d2830;
+  --line: #31404a;
+  --accent: #2aa198;
+  --accent-strong: #4bc7bd;
+  --signal: #f59e0b;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -29,9 +42,19 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(42, 161, 152, 0.16), transparent 35%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.12), transparent 32%),
+    linear-gradient(180deg, var(--background) 0%, color-mix(in srgb, var(--background) 88%, #000 12%) 100%);
   color: var(--foreground);
   font-family: var(--font-ui), "Segoe UI", sans-serif;
+}
+
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at top left, rgba(42, 161, 152, 0.24), transparent 32%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 30%),
+    linear-gradient(180deg, #0f1418 0%, #0b1014 100%);
 }
 
 .paper-hero {
@@ -46,6 +69,57 @@ body {
       transparent 50%
     ),
     linear-gradient(135deg, #f8f3ec 0%, #f4efe8 100%);
+}
+
+html[data-theme="dark"] .paper-hero {
+  background:
+    radial-gradient(circle at top left, rgba(42, 161, 152, 0.22), transparent 36%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 32%),
+    linear-gradient(135deg, rgba(21, 29, 34, 0.96) 0%, rgba(13, 18, 22, 0.98) 100%);
+}
+
+html[data-theme="dark"] .bg-white {
+  background-color: var(--panel) !important;
+}
+
+html[data-theme="dark"] .bg-panel {
+  background-color: var(--panel) !important;
+}
+
+html[data-theme="dark"] .bg-panel-strong {
+  background-color: var(--panel-strong) !important;
+}
+
+html[data-theme="dark"] .border-line {
+  border-color: var(--line) !important;
+}
+
+html[data-theme="dark"] .text-ink {
+  color: var(--ink) !important;
+}
+
+html[data-theme="dark"] .text-muted {
+  color: var(--muted) !important;
+}
+
+html[data-theme="dark"] .bg-background {
+  background-color: var(--background) !important;
+}
+
+html[data-theme="dark"] .soft-shadow {
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.38);
+}
+
+html[data-theme] {
+  color-scheme: dark light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
 }
 
 .soft-shadow {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import ThemeToggle from "../components/theme-toggle";
 
 const editorial = Cormorant_Garamond({
   variable: "--font-editorial",
@@ -28,8 +29,31 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${editorial.variable} ${ui.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function () {
+                try {
+                  var storedTheme = window.localStorage.getItem('gemineye-theme');
+                  var theme = storedTheme === 'light' || storedTheme === 'dark'
+                    ? storedTheme
+                    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                  document.documentElement.dataset.theme = theme;
+                  document.documentElement.style.colorScheme = theme;
+                } catch (error) {
+                  document.documentElement.dataset.theme = 'light';
+                  document.documentElement.style.colorScheme = 'light';
+                }
+              })();
+            `,
+          }}
+        />
+        {children}
+        <ThemeToggle />
+      </body>
     </html>
   );
 }
