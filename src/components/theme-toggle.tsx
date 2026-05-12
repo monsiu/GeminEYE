@@ -40,7 +40,7 @@ export default function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       aria-label={mounted ? `Switch to ${theme === "dark" ? "light" : "dark"} mode` : "Toggle theme"}
-      className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full border border-line bg-panel/95 px-4 py-2 text-xs font-semibold text-ink shadow-lg backdrop-blur transition hover:border-accent hover:text-accent"
+      className="button-pop fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full border border-line bg-panel/95 px-4 py-2 text-xs font-semibold text-ink shadow-lg backdrop-blur transition hover:border-accent hover:text-accent"
     >
       <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
       <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>

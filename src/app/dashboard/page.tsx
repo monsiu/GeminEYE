@@ -185,8 +185,8 @@ export default function DashboardPage() {
               <p className="mt-2 text-sm text-muted">View and download previously generated GeminEYE reports.</p>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={clearAllReports} className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Clear all</button>
-              <a href="/" className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Back to Analyzer</a>
+              <button onClick={clearAllReports} className="button-pop rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Clear all</button>
+              <a href="/" className="button-pop rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Back to Analyzer</a>
             </div>
           </div>
         </div>
@@ -230,8 +230,8 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => downloadSavedReport(r)} className="rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Download</button>
-                      <button onClick={() => removeReportById(r.id)} className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Delete</button>
+                      <button onClick={() => downloadSavedReport(r)} className="button-pop rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Download</button>
+                      <button onClick={() => removeReportById(r.id)} className="button-pop rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Delete</button>
                     </div>
                   </div>
 
@@ -285,8 +285,8 @@ export default function DashboardPage() {
           <div className="fixed right-6 bottom-6 z-60 flex items-center gap-4 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar">
             <style dangerouslySetInnerHTML={{ __html: SNACKBAR_CSS }} />
             <div className="text-sm text-ink">Deleted "{deletedReport.title}"</div>
-            <button onClick={undoDelete} className="rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Undo</button>
-            <button onClick={() => { setShowUndo(false); setDeletedReport(null); if (undoTimerRef.current) { window.clearTimeout(undoTimerRef.current); undoTimerRef.current = null; } }} className="rounded-full border border-line bg-white px-3 py-1 text-xs text-muted">Dismiss</button>
+            <button onClick={undoDelete} className="button-pop rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Undo</button>
+            <button onClick={() => { setShowUndo(false); setDeletedReport(null); if (undoTimerRef.current) { window.clearTimeout(undoTimerRef.current); undoTimerRef.current = null; } }} className="button-pop rounded-full border border-line bg-white px-3 py-1 text-xs text-muted transition hover:border-accent hover:text-accent">Dismiss</button>
           </div>
         ) : null}
 
