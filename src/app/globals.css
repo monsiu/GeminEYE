@@ -236,6 +236,22 @@ html[data-theme="dark"] .btn-primary.button-pop:hover {
   border-color: color-mix(in srgb, var(--color-accent-strong) 58%, var(--line));
 }
 
+html[data-theme="dark"] .analysis-done-button {
+  background: #fffdf9;
+  color: #1c1a18;
+  border-color: #fffdf9;
+}
+
+.analysis-done-button:disabled,
+.analysis-done-button[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.analysis-done-button:disabled:hover,
+.analysis-done-button[aria-disabled="true"]:hover {
+  cursor: not-allowed;
+}
+
 /* Progress fill that respects muted accent */
 .bg-accent-progress {
   background: var(--accent-progress) !important;

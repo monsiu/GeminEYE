@@ -1010,9 +1010,15 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={runAnalysis}
-                  className="rounded-full btn-inverse button-pop px-5 py-2.5 text-sm font-semibold"
+                  disabled={isLoading || hasAnalysisResult}
+                  aria-disabled={isLoading || hasAnalysisResult}
+                  className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
+                    hasAnalysisResult
+                      ? "analysis-done-button border border-line bg-panel text-muted"
+                      : "btn-inverse button-pop"
+                  }`}
                 >
-                  {isLoading ? "Analyzing..." : "Run analysis"}
+                  {isLoading ? "Analyzing..." : hasAnalysisResult ? "Analysis Done" : "Run analysis"}
                 </button>
                 <button
                   onClick={resetAll}
@@ -1026,12 +1032,12 @@ export default function Home() {
                 <span
                   className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
                     apiStatus === "checking"
-                      ? "border-sky-200 bg-sky-50 text-sky-700"
+                      ? "border-line bg-panel text-muted"
                       : apiStatus === "unknown"
-                      ? "border-line text-muted"
+                      ? "border-line bg-panel text-muted"
                       : apiStatus === "configured"
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-amber-200 bg-amber-50 text-amber-700"
+                      ? "border-slate-200 bg-slate-50 text-slate-700"
+                      : "border-stone-200 bg-stone-50 text-stone-700"
                   }`}
                 >
                   {apiStatus === "checking"
