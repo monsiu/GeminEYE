@@ -54,6 +54,10 @@ body {
     linear-gradient(180deg, var(--background) 0%, color-mix(in srgb, var(--background) 88%, #000 12%) 100%);
   color: var(--foreground);
   font-family: var(--font-ui), "Segoe UI", sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 html[data-theme="dark"] body {
@@ -128,6 +132,20 @@ html[data-theme="light"] {
   color-scheme: light;
 }
 
+::selection {
+  background: color-mix(in srgb, var(--accent) 28%, var(--panel) 72%);
+  color: var(--ink);
+}
+
+:where(button, a, input, textarea, select, summary):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent-strong) 72%, var(--panel) 28%);
+  outline-offset: 2px;
+}
+
+:where(button, a, input, textarea, select, summary):focus:not(:focus-visible) {
+  outline: none;
+}
+
 .soft-shadow {
   box-shadow: 0 30px 70px rgba(40, 31, 22, 0.12);
 }
@@ -172,6 +190,26 @@ button, a[role="button"], [role="button"] {
 .button-pop:hover {
   transform: scale(1.05);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .rise-in,
+  .button-pop,
+  .gemineye-snackbar {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .button-pop:hover {
+    transform: none;
+  }
 }
 
 html[data-theme="dark"] .button-pop:hover {
