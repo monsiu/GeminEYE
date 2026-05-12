@@ -1060,7 +1060,7 @@ export default function Home() {
             </div>
 
             <div className="rounded-2xl border border-line bg-panel p-5">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-muted">
                   Contract intake
                 </h2>
