@@ -3,6 +3,7 @@
 import type { ChangeEvent } from "react";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import ErrorAlert from "../components/error-alert";
+import { SkeletonCard } from "../components/skeleton-loader";
 
 type MemoFinding = {
   id: string;
@@ -1161,7 +1162,7 @@ export default function Home() {
                 </span>
               </div>
             </summary>
-            <Suspense fallback={<div className="mt-4 h-32 animate-pulse rounded-2xl bg-panel-strong" />}>
+            <Suspense fallback={<SkeletonCard />}>
               <pre className="mt-4 flex-1 overflow-y-auto whitespace-pre-wrap rounded-2xl border border-line bg-white p-4 text-xs text-muted">
                 {contractText.trim().length > 0
                   ? contractText

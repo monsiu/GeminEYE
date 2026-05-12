@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import ErrorAlert from "../../components/error-alert";
+import ReportCard from "../../components/report-card";
+import { SkeletonGrid } from "../../components/skeleton-loader";
 import { debounce } from "../../lib/debounce";
 import { calculateDashboardStats } from "../../lib/dashboard-stats";
+import { saveScrollPosition, restoreScrollPosition } from "../../lib/scroll-position";
 
 const SNACKBAR_CSS = `
   @keyframes gemineye-slide-up { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -26,23 +29,22 @@ type SavedReport = {
   html: string;
 };
 
-function formatDateTimeLocal(iso?: string) {
-  if (!iso) return "";
-  try {
-    return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
+
+const ITEMS_PER_PAGE = 6;
 
 export default function DashboardPage() {
   const [reports, setReports] = useState<SavedReport[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [deletedReport, setDeletedReport] = useState<SavedReport | null>(null);
   const [showUndo, setShowUndo] = useState(false);
   const undoTimerRef = useRef<number | null>(null);
   const [deletedReportsBulk, setDeletedReportsBulk] = useState<SavedReport[] | null>(null);
   const [showBulkUndo, setShowBulkUndo] = useState(false);
   const bulkUndoTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    restoreScrollPosition();
+  }, []);
 
   useEffect(() => {
     try {
@@ -151,6 +153,7 @@ export default function DashboardPage() {
   const debouncedSortBy = useRef(debounce((value: string) => setSortMethod(value), 200)).current;
 
   const filteredAndSortedReports = (() => {
+    saveScrollPosition();
     let list = [...reports];
     if (filteredRisk && filteredRisk !== "All") {
       list = list.filter((r) => (r.label || "").toLowerCase().includes(filteredRisk.toLowerCase()));
@@ -167,9 +170,15 @@ export default function DashboardPage() {
     return list;
   })();
 
+  const totalPages = Math.ceil(filteredAndSortedReports.length / ITEMS_PER_PAGE);
+  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedReports = filteredAndSortedReports.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
   const dashboardStats = calculateDashboardStats(reports);
 
-  function downloadSavedReport(r: SavedReport) {
+  function downloadSavedReport(id: string) {
+    const r = reports.find(report => report.id === id);
+    if (!r) return;
     const blob = new Blob([r.html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const previewWindow = window.open(url, "_blank", "noopener,noreferrer");
@@ -202,10 +211,14 @@ export default function DashboardPage() {
 
         <section className="mt-8 rounded-3xl border border-line bg-panel p-6">
           {reports.length === 0 ? (
-            <div className="text-center py-12 text-muted">No saved reports yet. Generate a report and download it to add it here.</div>
+            <div className="text-center py-12">
+              <h3 className="text-ink font-semibold mb-2">No saved reports yet</h3>
+              <p className="text-muted text-sm mb-4">Generate a report from the analyzer to view it here.</p>
+              <a href="/" className="button-pop rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Go to Analyzer</a>
+            </div>
           ) : (
-            <div className="grid gap-4">
-              <div className="flex items-center justify-between">
+            <>
+              <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <label className="text-sm text-muted">Filter:</label>
                   <select defaultValue={filteredRisk} onChange={(e) => debouncedFilterRisk(e.target.value)} className="rounded-md border border-line bg-white px-3 py-1 text-sm">
@@ -224,65 +237,54 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {filteredAndSortedReports.map((r) => (
-                <div key={r.id} className="rounded-2xl border border-line bg-white p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-medium text-ink">{r.title}</h3>
-                        <span className="text-xs text-muted">{formatDateTimeLocal(r.createdAt)}</span>
-                      </div>
-                      <div className="mt-2 flex items-center gap-3 text-sm text-muted">
-                        <span className={badgeClass(r.label)}>{r.label}</span>
-                        <span>Score: {r.score === null || r.score === undefined ? "-" : `${Number(r.score).toFixed(1)} / 10`}</span>
-                        <span>{r.findings?.length ?? 0} flagged clauses</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => downloadSavedReport(r)} className="button-pop rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Download</button>
-                      <button onClick={() => removeReportById(r.id)} className="button-pop rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Delete</button>
-                    </div>
-                  </div>
+              <div className="space-y-6 mb-6">
+                {paginatedReports.map((report) => (
+                  <ReportCard
+                    key={report.id}
+                    report={report}
+                    onDownload={downloadSavedReport}
+                    onRemove={removeReportById}
+                    badgeClass={badgeClass}
+                  />
+                ))}
+              </div>
 
-                  <details className="group mt-4 rounded-xl border border-line bg-panel px-4 py-3">
-                    <summary className="cursor-pointer list-none text-sm font-semibold text-ink">
-                      <span className="inline-flex items-center gap-2">
-                        <span aria-hidden="true" className="text-xs text-muted group-open:hidden">▶</span>
-                        <span aria-hidden="true" className="hidden text-xs text-muted group-open:inline">▼</span>
-                        <span>Flagged clauses {r.findings?.length ? `(${r.findings.length})` : "(none)"}</span>
-                        <span className="text-xs font-medium text-muted group-open:hidden">Click to view</span>
-                        <span className="hidden text-xs font-medium text-muted group-open:inline">Click to hide</span>
-                      </span>
-                    </summary>
-                    <div className="mt-3 grid gap-3">
-                      {r.findings && r.findings.length > 0 ? (
-                        r.findings.map((finding) => (
-                          <article key={finding.id} className="rounded-xl border border-line bg-white p-4">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="rounded-full border border-line bg-panel px-2 py-1 text-xs font-semibold text-muted">{finding.id}</span>
-                              <span className={badgeClass(finding.risk)}>{finding.risk} risk</span>
-                              <span className="text-sm font-medium text-ink">{finding.category}</span>
-                            </div>
-                            <div className="mt-3 grid gap-3 text-sm text-muted">
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink">Flagged clause</p>
-                                <p className="mt-1 whitespace-pre-wrap">{finding.evidence}</p>
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink">Recommendation</p>
-                                <p className="mt-1 whitespace-pre-wrap">{finding.recommendation}</p>
-                              </div>
-                            </div>
-                          </article>
-                        ))
-                      ) : (
-                        <p className="text-sm text-muted">No flagged clauses were captured for this report.</p>
-                      )}
-                    </div>
-                  </details>
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 pt-6 border-t border-line">
+                  <button
+                    onClick={() => { setCurrentPage(1); restoreScrollPosition(); }}
+                    disabled={currentPage === 1}
+                    className="text-xs px-3 py-1 rounded border border-line disabled:opacity-50 disabled:cursor-not-allowed hover:border-accent hover:text-accent transition"
+                  >
+                    ← First
+                  </button>
+                  <button
+                    onClick={() => { setCurrentPage(c => Math.max(1, c - 1)); restoreScrollPosition(); }}
+                    disabled={currentPage === 1}
+                    className="text-xs px-3 py-1 rounded border border-line disabled:opacity-50 disabled:cursor-not-allowed hover:border-accent hover:text-accent transition"
+                  >
+                    ← Prev
+                  </button>
+                  <span className="text-xs text-muted px-3">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => { setCurrentPage(c => Math.min(totalPages, c + 1)); restoreScrollPosition(); }}
+                    disabled={currentPage === totalPages}
+                    className="text-xs px-3 py-1 rounded border border-line disabled:opacity-50 disabled:cursor-not-allowed hover:border-accent hover:text-accent transition"
+                  >
+                    Next →
+                  </button>
+                  <button
+                    onClick={() => { setCurrentPage(totalPages); restoreScrollPosition(); }}
+                    disabled={currentPage === totalPages}
+                    className="text-xs px-3 py-1 rounded border border-line disabled:opacity-50 disabled:cursor-not-allowed hover:border-accent hover:text-accent transition"
+                  >
+                    Last →
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </section>
 

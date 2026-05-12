@@ -14,7 +14,12 @@ function hasConfiguredProvider() {
 }
 
 export function GET() {
-  return NextResponse.json({
-    configured: hasConfiguredProvider(),
-  });
+  return NextResponse.json(
+    { configured: hasConfiguredProvider() },
+    {
+      headers: {
+        "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+      },
+    }
+  );
 }

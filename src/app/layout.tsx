@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import ErrorBoundary from "../components/error-boundary";
 import ThemeToggle from "../components/theme-toggle";
 import BackToTop from "../components/back-to-top";
+import WebVitalsClient from "../components/web-vitals-client";
 
 const editorial = Cormorant_Garamond({
   variable: "--font-editorial",
@@ -19,8 +21,21 @@ const ui = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "GeminEYE – AI Contract Risk Analyzer",
   description: "AI-powered contract risk analyzer. Upload PDFs, DOCX files, or paste text. Get structured investigator-style memos with evidence-backed findings and risk scores.",
+  keywords: "contract analysis, AI, risk assessment, legal review, document analysis",
+  openGraph: {
+    title: "GeminEYE – AI Contract Risk Analyzer",
+    description: "Analyze contracts with AI-powered risk assessment and structured findings.",
+    type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GeminEYE – AI Contract Risk Analyzer",
+    description: "Analyze contracts with AI-powered risk assessment.",
+  },
 };
 
 export default function RootLayout({
@@ -35,7 +50,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <a href="#main-content" className="absolute left-[-9999px] rounded bg-accent px-3 py-2 text-sm font-semibold text-white focus:left-6 focus:top-6 focus:z-50">
+        <WebVitalsClient />
+        <a href="#main-content" className="sr-only rounded bg-accent px-3 py-2 text-sm font-semibold text-white focus:not-sr-only focus:absolute focus:left-6 focus:top-6 focus:z-50">
           Skip to main content
         </a>
         <script
@@ -58,7 +74,9 @@ export default function RootLayout({
           }}
         />
         <main id="main-content">
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </main>
         <BackToTop />
         <ThemeToggle />

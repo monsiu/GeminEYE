@@ -2,7 +2,15 @@
   "name": "gemineye",
   "version": "0.1.0",
   "description": "AI-powered contract risk analyzer. Upload PDFs, DOCX files, or paste contract text. GeminEYE extracts clauses, scores risk, and delivers structured investigator-style memos with evidence-backed findings.",
-  "keywords": ["contract", "risk", "analysis", "legal", "ai", "gemini", "compliance"],
+  "keywords": [
+    "contract",
+    "risk",
+    "analysis",
+    "legal",
+    "ai",
+    "gemini",
+    "compliance"
+  ],
   "author": "monsiu",
   "license": "MIT",
   "repository": {
@@ -21,7 +29,8 @@
     "next": "16.2.4",
     "pdf-parse": "^2.4.5",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "web-vitals": "^5.2.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
