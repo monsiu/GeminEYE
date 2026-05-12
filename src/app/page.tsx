@@ -638,6 +638,30 @@ export default function Home() {
       if (data.contractTitle) {
         setAnalyzedContractTitle(data.contractTitle);
       }
+
+      const resolvedMemo = data.memo ?? memo;
+      const resolvedContractTitle = (data.contractTitle?.trim() || contractTitle.trim() || "Contract Review");
+      const resolvedFallback = typeof data.fallback === "boolean" ? data.fallback : isFallback;
+
+      const generatedReportHtml = buildReportHtml({
+        contractTitle: resolvedContractTitle,
+        contractText,
+        memo: resolvedMemo,
+        fallback: resolvedFallback,
+      });
+
+      saveReportToStorage({
+        id: `${Date.now()}`,
+        title: resolvedContractTitle,
+        score:
+          resolvedMemo.overallRiskScore === undefined || resolvedMemo.overallRiskScore === null
+            ? null
+            : Number(resolvedMemo.overallRiskScore),
+        label: riskLabel(resolvedMemo.overallRiskScore),
+        createdAt: new Date().toISOString(),
+        html: generatedReportHtml,
+      });
+
       setHasAnalysisResult(true);
       if (typeof data.keyLoaded === "boolean") {
         setKeyLoaded(data.keyLoaded);
@@ -654,6 +678,30 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  function saveReportToStorage(report: {
+    id: string;
+    title: string;
+    score?: number | null;
+    label: string;
+    createdAt: string;
+    html: string;
+  }) {
+    try {
+      const key = "gemineye_reports";
+      const raw = localStorage.getItem(key) || "[]";
+      const arr = JSON.parse(raw) as Array<any>;
+      arr.unshift(report);
+      // keep most recent 200 reports
+      const trimmed = arr.slice(0, 200);
+      localStorage.setItem(key, JSON.stringify(trimmed));
+    } catch (e) {
+      // ignore storage errors
+      // (localStorage may be disabled in some private modes)
+      // eslint-disable-next-line no-console
+      console.warn("Failed to save report to storage", e);
+    }
+  }
 
   const downloadReport = () => {
     const reportContractTitle = analyzedContractTitle.trim() || contractTitle.trim() || "Contract Review";
@@ -904,6 +952,12 @@ export default function Home() {
                     Download report
                   </button>
                 ) : null}
+                <a
+                  href="/dashboard"
+                  className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent"
+                >
+                  View Dashboard
+                </a>
               </div>
             </div>
             {isFallback ? (
