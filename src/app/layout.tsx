@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import ThemeToggle from "../components/theme-toggle";
+import BackToTop from "../components/back-to-top";
 
 const editorial = Cormorant_Garamond({
   variable: "--font-editorial",
@@ -52,6 +53,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <BackToTop />
         <ThemeToggle />
       </body>
     </html>
