@@ -94,6 +94,30 @@ function riskLabel(score?: number) {
   return "Lower risk";
 }
 
+function narrativeSeverityClass(score?: number) {
+  if (score === undefined || score === null || Number.isNaN(Number(score))) {
+    return "narrative-unscored";
+  }
+
+  const numericScore = Number(score);
+  if (numericScore >= 6.5) {
+    return "narrative-high";
+  }
+  if (numericScore >= 3.5) {
+    return "narrative-moderate";
+  }
+  return "narrative-lower";
+}
+
+function highlightRiskTerms(value: string) {
+  return escapeHtml(value)
+    .replace(/\bhigh risk\b/gi, '<span class="risk-term risk-term-high">$&</span>')
+    .replace(/\bmoderate risk\b/gi, '<span class="risk-term risk-term-medium">$&</span>')
+    .replace(/\bmedium risk\b/gi, '<span class="risk-term risk-term-medium">$&</span>')
+    .replace(/\blower risk\b/gi, '<span class="risk-term risk-term-low">$&</span>')
+    .replace(/\blow risk\b/gi, '<span class="risk-term risk-term-low">$&</span>');
+}
+
 function buildReportHtml(input: {
   contractTitle: string;
   contractText: string;
@@ -106,9 +130,10 @@ function buildReportHtml(input: {
     input.memo.overallRiskScore === undefined || input.memo.overallRiskScore === null
       ? "-"
       : Number(input.memo.overallRiskScore).toFixed(1);
+  const narrativeToneClass = narrativeSeverityClass(input.memo.overallRiskScore);
 
   const narrative = input.memo.narrative
-    .map((item) => `<p>${escapeHtml(item)}</p>`)
+    .map((item) => `<p>${highlightRiskTerms(item)}</p>`)
     .join("");
 
   const summary = input.memo.summary
@@ -302,6 +327,34 @@ function buildReportHtml(input: {
         line-height: 1.7;
       }
 
+      .section-body.narrative.narrative-high p {
+        color: #7f1d1d;
+      }
+
+      .section-body.narrative.narrative-moderate p {
+        color: #92400e;
+      }
+
+      .section-body.narrative.narrative-lower p {
+        color: #065f46;
+      }
+
+      .risk-term {
+        font-weight: 700;
+      }
+
+      .risk-term-high {
+        color: #b91c1c;
+      }
+
+      .risk-term-medium {
+        color: #a16207;
+      }
+
+      .risk-term-low {
+        color: #047857;
+      }
+
       .section-body ul {
         margin: 0;
         padding-left: 20px;
@@ -415,7 +468,7 @@ function buildReportHtml(input: {
           </div>
           <div class="meta-card">
             <span class="label">Risk score</span>
-            <div class="value">${riskScore}</div>
+            <div class="value">${riskScore} / 10</div>
           </div>
           <div class="meta-card">
             <span class="label">Risk label</span>
@@ -436,7 +489,7 @@ function buildReportHtml(input: {
           </div>
           <span class="badge">${escapeHtml(riskLabel(input.memo.overallRiskScore))}</span>
         </div>
-        <div class="section-body">${narrative || '<p class="empty">No narrative was returned.</p>'}</div>
+        <div class="section-body narrative ${narrativeToneClass}">${narrative || '<p class="empty">No narrative was returned.</p>'}</div>
       </section>
 
       <section class="section">
@@ -612,6 +665,12 @@ export default function Home() {
     });
     const blob = new Blob([reportHtml], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
+
+    const previewWindow = window.open(url, "_blank", "noopener,noreferrer");
+    if (previewWindow) {
+      previewWindow.opener = null;
+    }
+
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = `${safeFilename(reportContractTitle)}-gemineye-report.html`;
@@ -620,7 +679,7 @@ export default function Home() {
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    window.setTimeout(() => URL.revokeObjectURL(url), 30000);
   };
 
   const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
