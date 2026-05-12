@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type MemoFinding = {
   id: string;
@@ -717,9 +717,41 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [fileStatus, setFileStatus] = useState<string | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [keyLoaded, setKeyLoaded] = useState<boolean | null>(null);
+  const [apiStatus, setApiStatus] = useState<"checking" | "unknown" | "configured" | "missing">("checking");
   const [isFallback, setIsFallback] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadApiStatus() {
+      if (active) {
+        setApiStatus("checking");
+      }
+
+      try {
+        const response = await fetch("/api/status", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Status check failed.");
+        }
+
+        const data = (await response.json()) as { configured?: boolean };
+        if (active) {
+          setApiStatus(data.configured ? "configured" : "missing");
+        }
+      } catch {
+        if (active) {
+          setApiStatus("unknown");
+        }
+      }
+    }
+
+    loadApiStatus();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const riskScoreLabel = useMemo(() => {
     if (memo.overallRiskScore === undefined || memo.overallRiskScore === null) {
@@ -765,7 +797,6 @@ export default function Home() {
     setError(null);
     setFileStatus(null);
     setIsExtracting(false);
-    setKeyLoaded(null);
     setIsFallback(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -802,7 +833,7 @@ export default function Home() {
 
       const data = (await response.json()) as {
         memo?: MemoPayload;
-        keyLoaded?: boolean;
+        configured?: boolean;
         fallback?: boolean;
         error?: string;
         contractTitle?: string;
@@ -842,8 +873,8 @@ export default function Home() {
       }
 
       setHasAnalysisResult(true);
-      if (typeof data.keyLoaded === "boolean") {
-        setKeyLoaded(data.keyLoaded);
+      if (typeof data.configured === "boolean") {
+        setApiStatus(data.configured ? "configured" : "missing");
       }
       if (typeof data.fallback === "boolean") {
         setIsFallback(data.fallback);
@@ -994,17 +1025,21 @@ export default function Home() {
                 </span>
                 <span
                   className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
-                    keyLoaded === null
+                    apiStatus === "checking"
+                      ? "border-sky-200 bg-sky-50 text-sky-700"
+                      : apiStatus === "unknown"
                       ? "border-line text-muted"
-                      : keyLoaded
+                      : apiStatus === "configured"
                       ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                       : "border-amber-200 bg-amber-50 text-amber-700"
                   }`}
                 >
-                  {keyLoaded === null
+                  {apiStatus === "checking"
+                    ? "Checking"
+                    : apiStatus === "unknown"
                     ? "Not checked"
-                    : keyLoaded
-                    ? "Ready"
+                    : apiStatus === "configured"
+                    ? "Configured"
                     : "Missing"}
                 </span>
                 {isFallback ? (
