@@ -1,7 +1,8 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import ErrorAlert from "../components/error-alert";
 
 type MemoFinding = {
   id: string;
@@ -1122,11 +1123,7 @@ export default function Home() {
                     className="rounded-xl border border-line bg-white p-3 text-sm text-muted focus:outline-none focus:ring-2 focus:ring-accent"
                   />
                 </label>
-                {error ? (
-                  <div className="rounded-xl border border-signal bg-white px-3 py-2 text-xs text-signal">
-                    {error}
-                  </div>
-                ) : null}
+                <ErrorAlert message={error || ""} />
                 {fileStatus ? (
                   <div className="rounded-xl border border-signal bg-white px-3 py-2 text-xs text-signal">
                     {fileStatus}
@@ -1164,11 +1161,13 @@ export default function Home() {
                 </span>
               </div>
             </summary>
-            <pre className="mt-4 flex-1 overflow-y-auto whitespace-pre-wrap rounded-2xl border border-line bg-white p-4 text-xs text-muted">
-              {contractText.trim().length > 0
-                ? contractText
-                : "Upload a contract to preview extracted text."}
-            </pre>
+            <Suspense fallback={<div className="mt-4 h-32 animate-pulse rounded-2xl bg-panel-strong" />}>
+              <pre className="mt-4 flex-1 overflow-y-auto whitespace-pre-wrap rounded-2xl border border-line bg-white p-4 text-xs text-muted">
+                {contractText.trim().length > 0
+                  ? contractText
+                  : "Upload a contract to preview extracted text."}
+              </pre>
+            </Suspense>
           </details>
 
           <div className="rounded-3xl border border-line bg-panel p-6">

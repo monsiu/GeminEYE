@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import ErrorAlert from "../../components/error-alert";
+import { debounce } from "../../lib/debounce";
+import { calculateDashboardStats } from "../../lib/dashboard-stats";
 
 const SNACKBAR_CSS = `
   @keyframes gemineye-slide-up { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -34,8 +37,6 @@ function formatDateTimeLocal(iso?: string) {
 
 export default function DashboardPage() {
   const [reports, setReports] = useState<SavedReport[]>([]);
-  const [filterRisk, setFilterRisk] = useState<string>("All");
-  const [sortBy, setSortBy] = useState<string>("newest");
   const [deletedReport, setDeletedReport] = useState<SavedReport | null>(null);
   const [showUndo, setShowUndo] = useState(false);
   const undoTimerRef = useRef<number | null>(null);
@@ -143,22 +144,30 @@ export default function DashboardPage() {
     return "rounded-full border px-3 py-1 text-xs font-semibold";
   }
 
-  const filteredAndSortedReports = useMemo(() => {
+  const [filteredRisk, setFilteredRisk] = useState("All");
+  const [sortMethod, setSortMethod] = useState("newest");
+
+  const debouncedFilterRisk = useRef(debounce((value: string) => setFilteredRisk(value), 200)).current;
+  const debouncedSortBy = useRef(debounce((value: string) => setSortMethod(value), 200)).current;
+
+  const filteredAndSortedReports = (() => {
     let list = [...reports];
-    if (filterRisk && filterRisk !== "All") {
-      list = list.filter((r) => (r.label || "").toLowerCase().includes(filterRisk.toLowerCase()));
+    if (filteredRisk && filteredRisk !== "All") {
+      list = list.filter((r) => (r.label || "").toLowerCase().includes(filteredRisk.toLowerCase()));
     }
-    if (sortBy === "newest") {
+    if (sortMethod === "newest") {
       list.sort((a, b) => (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-    } else if (sortBy === "oldest") {
+    } else if (sortMethod === "oldest") {
       list.sort((a, b) => (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
-    } else if (sortBy === "score-high") {
+    } else if (sortMethod === "score-high") {
       list.sort((a, b) => (Number(b.score ?? -Infinity) - Number(a.score ?? -Infinity)));
-    } else if (sortBy === "score-low") {
+    } else if (sortMethod === "score-low") {
       list.sort((a, b) => (Number(a.score ?? Infinity) - Number(b.score ?? Infinity)));
     }
     return list;
-  }, [reports, filterRisk, sortBy]);
+  })();
+
+  const dashboardStats = calculateDashboardStats(reports);
 
   function downloadSavedReport(r: SavedReport) {
     const blob = new Blob([r.html], { type: "text/html;charset=utf-8" });
@@ -199,14 +208,14 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <label className="text-sm text-muted">Filter:</label>
-                  <select value={filterRisk} onChange={(e) => setFilterRisk(e.target.value)} className="rounded-md border border-line bg-white px-3 py-1 text-sm">
+                  <select defaultValue={filteredRisk} onChange={(e) => debouncedFilterRisk(e.target.value)} className="rounded-md border border-line bg-white px-3 py-1 text-sm">
                     <option>All</option>
                     <option>High</option>
                     <option>Moderate</option>
                     <option>Lower</option>
                   </select>
                   <label className="ml-4 text-sm text-muted">Sort:</label>
-                  <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="rounded-md border border-line bg-white px-3 py-1 text-sm">
+                  <select defaultValue={sortMethod} onChange={(e) => debouncedSortBy(e.target.value)} className="rounded-md border border-line bg-white px-3 py-1 text-sm">
                     <option value="newest">Newest</option>
                     <option value="oldest">Oldest</option>
                     <option value="score-high">Score (high)</option>

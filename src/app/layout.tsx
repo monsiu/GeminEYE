@@ -8,12 +8,14 @@ const editorial = Cormorant_Garamond({
   variable: "--font-editorial",
   subsets: ["latin"],
   weight: ["400", "600", "700"],
+  display: "swap",
 });
 
 const ui = Space_Grotesk({
   variable: "--font-ui",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -33,6 +35,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <a href="#main-content" className="absolute left-[-9999px] rounded bg-accent px-3 py-2 text-sm font-semibold text-white focus:left-6 focus:top-6 focus:z-50">
+          Skip to main content
+        </a>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -52,7 +57,9 @@ export default function RootLayout({
             `,
           }}
         />
-        {children}
+        <main id="main-content">
+          {children}
+        </main>
         <BackToTop />
         <ThemeToggle />
       </body>
