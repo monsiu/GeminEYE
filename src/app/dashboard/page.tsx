@@ -235,12 +235,14 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <details className="mt-4 rounded-xl border border-line bg-panel px-4 py-3">
+                  <details className="group mt-4 rounded-xl border border-line bg-panel px-4 py-3">
                     <summary className="cursor-pointer list-none text-sm font-semibold text-ink">
                       <span className="inline-flex items-center gap-2">
-                        <span aria-hidden="true" className="text-xs text-muted">▼</span>
+                        <span aria-hidden="true" className="text-xs text-muted group-open:hidden">▶</span>
+                        <span aria-hidden="true" className="hidden text-xs text-muted group-open:inline">▼</span>
                         <span>Flagged clauses {r.findings?.length ? `(${r.findings.length})` : "(none)"}</span>
-                        <span className="text-xs font-medium text-muted">Click to expand</span>
+                        <span className="text-xs font-medium text-muted group-open:hidden">Click to view</span>
+                        <span className="hidden text-xs font-medium text-muted group-open:inline">Click to hide</span>
                       </span>
                     </summary>
                     <div className="mt-3 grid gap-3">
