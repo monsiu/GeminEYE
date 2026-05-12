@@ -13,6 +13,13 @@ type SavedReport = {
   score?: number | null;
   label: string;
   createdAt: string;
+  findings?: Array<{
+    id: string;
+    risk: "Low" | "Medium" | "High";
+    category: string;
+    evidence: string;
+    recommendation: string;
+  }>;
   html: string;
 };
 
@@ -209,21 +216,55 @@ export default function DashboardPage() {
               </div>
 
               {filteredAndSortedReports.map((r) => (
-                <div key={r.id} className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white p-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-medium text-ink">{r.title}</h3>
-                      <span className="text-xs text-muted">{formatDateTimeLocal(r.createdAt)}</span>
+                <div key={r.id} className="rounded-2xl border border-line bg-white p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-medium text-ink">{r.title}</h3>
+                        <span className="text-xs text-muted">{formatDateTimeLocal(r.createdAt)}</span>
+                      </div>
+                      <div className="mt-2 flex items-center gap-3 text-sm text-muted">
+                        <span className={badgeClass(r.label)}>{r.label}</span>
+                        <span>Score: {r.score === null || r.score === undefined ? "-" : `${Number(r.score).toFixed(1)} / 10`}</span>
+                        <span>{r.findings?.length ?? 0} flagged clauses</span>
+                      </div>
                     </div>
-                    <div className="mt-2 flex items-center gap-3 text-sm text-muted">
-                      <span className={badgeClass(r.label)}>{r.label}</span>
-                      <span>Score: {r.score === null || r.score === undefined ? "-" : `${Number(r.score).toFixed(1)} / 10`}</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => downloadSavedReport(r)} className="rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Download</button>
+                      <button onClick={() => removeReportById(r.id)} className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Delete</button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => downloadSavedReport(r)} className="rounded-full border border-line bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Download</button>
-                    <button onClick={() => removeReportById(r.id)} className="rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Delete</button>
-                  </div>
+
+                  <details className="mt-4 rounded-xl border border-line bg-panel px-4 py-3">
+                    <summary className="cursor-pointer list-none text-sm font-semibold text-ink">
+                      Flagged clauses {r.findings?.length ? `(${r.findings.length})` : "(none)"}
+                    </summary>
+                    <div className="mt-3 grid gap-3">
+                      {r.findings && r.findings.length > 0 ? (
+                        r.findings.map((finding) => (
+                          <article key={finding.id} className="rounded-xl border border-line bg-white p-4">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-full border border-line bg-panel px-2 py-1 text-xs font-semibold text-muted">{finding.id}</span>
+                              <span className={badgeClass(finding.risk)}>{finding.risk} risk</span>
+                              <span className="text-sm font-medium text-ink">{finding.category}</span>
+                            </div>
+                            <div className="mt-3 grid gap-3 text-sm text-muted">
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink">Flagged clause</p>
+                                <p className="mt-1 whitespace-pre-wrap">{finding.evidence}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink">Recommendation</p>
+                                <p className="mt-1 whitespace-pre-wrap">{finding.recommendation}</p>
+                              </div>
+                            </div>
+                          </article>
+                        ))
+                      ) : (
+                        <p className="text-sm text-muted">No flagged clauses were captured for this report.</p>
+                      )}
+                    </div>
+                  </details>
                 </div>
               ))}
             </div>
