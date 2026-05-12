@@ -204,7 +204,7 @@ html[data-theme="light"] .btn-inverse:hover {
   box-shadow: 0 10px 26px rgba(0,0,0,0.08);
 }
 
-/* Dark theme: keep the same dark-mode hover feel (slightly brighter accent) */
+/* Dark theme: make the inverse button hover to white for stronger contrast */
 html[data-theme="dark"] .btn-inverse {
   background: color-mix(in srgb, var(--color-accent-strong) 28%, var(--panel) 72%);
   color: var(--ink);
@@ -212,8 +212,9 @@ html[data-theme="dark"] .btn-inverse {
 }
 
 html[data-theme="dark"] .btn-inverse:hover {
-  background: color-mix(in srgb, var(--color-accent-strong) 38%, var(--panel) 62%);
-  border-color: color-mix(in srgb, var(--color-accent-strong) 58%, var(--line));
+  background: #fffdf9;
+  color: #1c1a18;
+  border-color: #fffdf9;
   box-shadow: 0 12px 34px rgba(0,0,0,0.36);
 }
 
