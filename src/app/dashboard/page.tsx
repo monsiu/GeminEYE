@@ -237,7 +237,11 @@ export default function DashboardPage() {
 
                   <details className="mt-4 rounded-xl border border-line bg-panel px-4 py-3">
                     <summary className="cursor-pointer list-none text-sm font-semibold text-ink">
-                      Flagged clauses {r.findings?.length ? `(${r.findings.length})` : "(none)"}
+                      <span className="inline-flex items-center gap-2">
+                        <span aria-hidden="true" className="text-xs text-muted">▼</span>
+                        <span>Flagged clauses {r.findings?.length ? `(${r.findings.length})` : "(none)"}</span>
+                        <span className="text-xs font-medium text-muted">Click to expand</span>
+                      </span>
                     </summary>
                     <div className="mt-3 grid gap-3">
                       {r.findings && r.findings.length > 0 ? (
