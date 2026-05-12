@@ -1007,10 +1007,10 @@ export default function Home() {
                 </span>
               </h2>
               <h1 className="font-serif text-4xl text-ink md:text-5xl">
-                Review contracts with an investigator's eye.
+                Review contracts with confidence.
               </h1>
               <p className="max-w-xl text-base text-muted">
-                Upload a PDF or DOCX, or paste contract text directly. GeminEYE turns dense agreements into a clear risk memo by extracting key clauses, scoring the overall picture, and highlighting issues across liability, indemnity, privacy, termination, intellectual property, and venue. You get evidence-backed findings and practical next steps you can use right away.
+                Upload a PDF or DOCX, or paste contract text directly. GeminEYE turns dense agreements into a clear, evidence-backed risk memo by extracting key clauses, scoring the overall picture, and surfacing issues across liability, indemnity, privacy, termination, intellectual property, and venue.
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <button
@@ -1023,45 +1023,50 @@ export default function Home() {
                       : "btn-inverse button-pop"
                   }`}
                 >
-                  {isLoading ? "Analyzing..." : hasAnalysisResult ? "Analysis Done" : "Run analysis"}
+                  {isLoading ? "Reviewing..." : hasAnalysisResult ? "Review complete" : "Start review"}
                 </button>
                 {hasAnalysisResult ? (
                   <button
                     onClick={resetAnalysis}
                     className="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
                   >
-                    Run again
+                    Review again
                   </button>
                 ) : null}
                 <button
                   onClick={resetAll}
                   className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink"
                 >
-                  Reset
+                  Clear all
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-3 text-xs text-muted md:grid-cols-3">
-                {["Liability", "Indemnity", "Data privacy", "Termination", "IP", "Venue"].map(
-                  (label) => (
-                    <span
-                      key={label}
-                      className="rounded-full border border-line bg-white px-3 py-1 text-center uppercase tracking-[0.2em]"
-                    >
-                      {label}
-                    </span>
-                  )
-                )}
+              <div className="flex flex-col gap-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.3em] text-muted">
+                  Common review areas
+                </span>
+                <div className="grid grid-cols-2 gap-3 text-xs text-muted md:grid-cols-3">
+                  {["Liability", "Indemnity", "Privacy", "Termination", "IP", "Venue"].map(
+                    (label) => (
+                      <span
+                        key={label}
+                        className="rounded-full border border-line bg-white px-3 py-1 text-center uppercase tracking-[0.2em]"
+                      >
+                        {label}
+                      </span>
+                    )
+                  )}
+                </div>
               </div>
             </div>
 
             <div className="rounded-2xl border border-line bg-panel p-5">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-muted">
-                  Intake
+                  Contract intake
                 </h2>
                 <div className="flex items-center gap-2">
                   <span className="text-xs uppercase tracking-[0.2em] text-muted">
-                    Gemini API
+                    Gemini status
                   </span>
                   <span
                     className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
@@ -1098,7 +1103,7 @@ export default function Home() {
                   />
                 </label>
                 <label className="flex flex-col gap-2 text-sm font-medium text-ink">
-                  Upload file
+                  Upload a PDF, DOCX, or TXT
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -1108,7 +1113,7 @@ export default function Home() {
                   />
                 </label>
                 <label className="flex flex-col gap-2 text-sm font-medium text-ink">
-                  Or paste text
+                  Paste contract text
                   <textarea
                     rows={7}
                     placeholder="Paste contract language or a specific clause..."
@@ -1129,8 +1134,8 @@ export default function Home() {
                 ) : null}
                 <div className="rounded-xl border border-line bg-white px-3 py-2">
                   <div className="flex items-center justify-between text-xs text-muted">
-                    <span>Extraction</span>
-                    <span>{isExtracting ? "Processing" : "Idle"}</span>
+                    <span>Text extraction</span>
+                    <span>{isExtracting ? "Extracting" : "Ready"}</span>
                   </div>
                   <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-panel-strong">
                     <div
