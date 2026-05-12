@@ -113,11 +113,11 @@ function narrativeSeverityClass(score?: number) {
 
 function highlightRiskTerms(value: string) {
   return escapeHtml(value)
-    .replace(/\bhigh risk\b/gi, '<span class="risk-term risk-term-high">$&</span>')
-    .replace(/\bmoderate risk\b/gi, '<span class="risk-term risk-term-medium">$&</span>')
-    .replace(/\bmedium risk\b/gi, '<span class="risk-term risk-term-medium">$&</span>')
-    .replace(/\blower risk\b/gi, '<span class="risk-term risk-term-low">$&</span>')
-    .replace(/\blow risk\b/gi, '<span class="risk-term risk-term-low">$&</span>');
+    .replace(/\bhigh risk\b/gi, '<span class="risk-pill risk-pill-high">$&</span>')
+    .replace(/\bmoderate risk\b/gi, '<span class="risk-pill risk-pill-medium">$&</span>')
+    .replace(/\bmedium risk\b/gi, '<span class="risk-pill risk-pill-medium">$&</span>')
+    .replace(/\blower risk\b/gi, '<span class="risk-pill risk-pill-low">$&</span>')
+    .replace(/\blow risk\b/gi, '<span class="risk-pill risk-pill-low">$&</span>');
 }
 
 function buildReportHtml(input: {
@@ -447,32 +447,54 @@ function buildReportHtml(input: {
         line-height: 1.7;
       }
 
-      .section-body.narrative.narrative-high p {
-        color: #7f1d1d;
+      .section-body.narrative p {
+        color: var(--foreground);
       }
 
-      .section-body.narrative.narrative-moderate p {
-        color: #92400e;
-      }
-
-      .section-body.narrative.narrative-lower p {
-        color: #065f46;
-      }
-
-      .risk-term {
+      .risk-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin: 0 0.15rem;
+        padding: 0.16rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.92em;
         font-weight: 700;
+        letter-spacing: 0.02em;
+        color: #ffffff;
+        border: 1px solid transparent;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+        white-space: nowrap;
       }
 
-      .risk-term-high {
-        color: #b91c1c;
+      .risk-pill-high {
+        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+        border-color: #991b1b;
       }
 
-      .risk-term-medium {
-        color: #a16207;
+      .risk-pill-medium {
+        background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+        border-color: #c2410c;
       }
 
-      .risk-term-low {
-        color: #047857;
+      .risk-pill-low {
+        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        border-color: #047857;
+      }
+
+      html[data-theme="dark"] .risk-pill-high {
+        background: linear-gradient(135deg, #ff6b6b 0%, #dc2626 100%);
+        border-color: #ef4444;
+      }
+
+      html[data-theme="dark"] .risk-pill-medium {
+        background: linear-gradient(135deg, #fdba74 0%, #f97316 100%);
+        border-color: #fb923c;
+      }
+
+      html[data-theme="dark"] .risk-pill-low {
+        background: linear-gradient(135deg, #6ee7b7 0%, #10b981 100%);
+        border-color: #34d399;
       }
 
       .section-body ul {

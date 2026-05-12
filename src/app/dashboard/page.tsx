@@ -282,7 +282,7 @@ export default function DashboardPage() {
         </div>
 
         {showUndo && deletedReport ? (
-          <div className="fixed right-6 bottom-6 z-50 flex items-center gap-4 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar">
+          <div className="fixed right-6 bottom-6 z-60 flex items-center gap-4 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar">
             <style dangerouslySetInnerHTML={{ __html: SNACKBAR_CSS }} />
             <div className="text-sm text-ink">Deleted "{deletedReport.title}"</div>
             <button onClick={undoDelete} className="rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Undo</button>
@@ -291,7 +291,7 @@ export default function DashboardPage() {
         ) : null}
 
         {showBulkUndo && deletedReportsBulk && deletedReportsBulk.length > 0 ? (
-          <div className="fixed right-6 bottom-6 z-50 flex items-center gap-4 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar">
+          <div className="fixed right-6 bottom-6 z-60 flex items-center gap-4 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar">
             <style dangerouslySetInnerHTML={{ __html: SNACKBAR_CSS }} />
             <div className="text-sm text-ink">Cleared {deletedReportsBulk.length} reports</div>
             <button onClick={undoClearAll} className="rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Undo</button>
