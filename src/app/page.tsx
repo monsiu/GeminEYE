@@ -1225,12 +1225,37 @@ export default function Home() {
                     >
                       Review again
                     </button>
-                    <button
-                      onClick={downloadReportAsJson}
-                      className="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
-                    >
-                      Export JSON
-                    </button>
+                    {isFallback ? (
+                      <span className="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink opacity-50 pointer-events-none">
+                        Export report
+                      </span>
+                    ) : (
+                      <a
+                        href="/dashboard"
+                        className="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                      >
+                        Export report
+                      </a>
+                    )}
+                    <details className="group relative">
+                      <summary className="list-none rounded-full border border-line bg-panel px-4 py-2.5 text-sm font-semibold text-muted transition hover:border-accent hover:text-accent cursor-pointer">
+                        Advanced
+                      </summary>
+                      <div className="absolute right-0 z-10 mt-2 w-44 rounded-2xl border border-line bg-white p-2 shadow-lg">
+                        {isFallback ? (
+                          <span className="block rounded-xl px-3 py-2 text-xs font-semibold text-muted opacity-50">
+                            Export JSON
+                          </span>
+                        ) : (
+                          <button
+                            onClick={downloadReportAsJson}
+                            className="block w-full rounded-xl px-3 py-2 text-left text-xs font-semibold text-ink transition hover:bg-panel hover:text-accent"
+                          >
+                            Export JSON
+                          </button>
+                        )}
+                      </div>
+                    </details>
                   </>
                 ) : null}
                 <button
