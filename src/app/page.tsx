@@ -211,11 +211,18 @@ function buildReportHtml(input: {
 
   const findings = input.memo.findings
     .map(
-      (item) => `
+      (item) => {
+        const riskIcon = 
+          item.risk === "High"
+            ? '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.3 18 16H2L10 2.3Z" /><path d="M10 7v4.2" /><path d="M10 13.8h.01" /></svg>'
+            : item.risk === "Medium"
+              ? '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.2" /><path d="M10 5.8v4.5" /><path d="M10 13.8h.01" /></svg>'
+              : '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.2" /><path d="m6.6 10.3 2.1 2.1L13.5 7.8" /></svg>';
+        return `
         <article class="finding">
           <div class="finding-head">
             <div class="finding-title-wrap">
-              <span class="finding-icon icon-${item.risk.toLowerCase()}">${item.risk === "High" ? "!" : item.risk === "Medium" ? "•" : "✓"}</span>
+              <span class="finding-icon icon-${item.risk.toLowerCase()}">${riskIcon}</span>
               <div>
                 <span class="finding-id">${escapeHtml(item.id)}</span>
                 <h3>${escapeHtml(item.category)}</h3>
@@ -233,7 +240,8 @@ function buildReportHtml(input: {
           <p class="label">Recommendation</p>
           <p>${escapeHtml(item.recommendation)}</p>
         </article>
-      `
+      `;
+      }
     )
     .join("");
 
