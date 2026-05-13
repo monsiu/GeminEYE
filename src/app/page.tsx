@@ -1334,7 +1334,7 @@ export default function Home() {
                         key={sample.title}
                         type="button"
                         onClick={() => loadSampleContract(sample)}
-                        className="rounded-lg border border-accent bg-white px-3 py-1.5 text-xs font-medium text-accent transition hover:bg-accent hover:text-white"
+                        className="sample-contract-button rounded-lg border px-3 py-1.5 text-xs font-medium transition"
                       >
                         {sample.title}
                       </button>

@@ -207,6 +207,30 @@ button, a[role="button"], [role="button"] {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 0 0 4px color-mix(in srgb, var(--color-accent) 16%, transparent);
 }
 
+.sample-contract-button {
+  background-color: var(--panel);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sample-contract-button:hover {
+  background-color: var(--accent);
+  border-color: var(--accent-strong);
+  color: #ffffff;
+}
+
+html[data-theme="dark"] .sample-contract-button {
+  background-color: var(--panel) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-strong) !important;
+}
+
+html[data-theme="dark"] .sample-contract-button:hover {
+  background-color: var(--accent-strong) !important;
+  border-color: var(--accent-strong) !important;
+  color: var(--panel) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
