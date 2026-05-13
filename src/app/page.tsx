@@ -1266,7 +1266,7 @@ export default function Home() {
                 </button>
               </div>
               <p className="text-[10px] text-muted italic">
-                💡 Keyboard shortcuts: <code className="bg-panel px-1">Ctrl+Enter</code> to analyze, <code className="bg-panel px-1">Esc</code> to close tooltips.
+                💡 Keyboard shortcuts: <code className="bg-panel px-1">Esc</code> to close tooltips.
               </p>
               <div className="flex flex-col gap-3">
                 <span className="text-xs font-semibold uppercase tracking-[0.3em] text-muted">
