@@ -1,4 +1,4 @@
-# GeminEYE 👁
+# GeminEYE 🕵️‍♂️📄
 
 **AI-powered contract risk analyzer.** Upload PDFs, DOCX files, or paste contract text. GeminEYE extracts clauses, scores risk, and delivers structured investigator-style memos with evidence-backed findings and negotiation-ready recommendations.
 
