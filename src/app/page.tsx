@@ -764,7 +764,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [fileStatus, setFileStatus] = useState<string | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [apiStatus, setApiStatus] = useState<"checking" | "unknown" | "configured" | "missing">("checking");
+  const [apiStatus, setApiStatus] = useState<"checking" | "unknown" | "configured" | "missing">("unknown");
   const [isFallback, setIsFallback] = useState<boolean>(false);
   const [activeReviewArea, setActiveReviewArea] = useState<string | null>(null);
   const reviewAreasRef = useRef<HTMLDivElement | null>(null);
