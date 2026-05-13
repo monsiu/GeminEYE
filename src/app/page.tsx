@@ -523,6 +523,7 @@ function buildReportHtml(input: {
         display: grid;
         gap: 10px;
         margin-top: 16px;
+        position: relative;
       }
 
       .overall-risk-track {
@@ -557,15 +558,46 @@ function buildReportHtml(input: {
         background: linear-gradient(90deg, rgba(248, 113, 113, 0.95), rgba(220, 38, 38, 0.95));
       }
 
-      .overall-risk-marker {
+      .overall-risk-ticks {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .overall-risk-ticks span {
+        position: absolute;
+        top: 0;
+        height: 12px;
+        width: 1px;
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      .overall-risk-marker-dot {
         position: absolute;
         top: 50%;
-        width: 10px;
-        height: 22px;
+        width: 14px;
+        height: 14px;
         border-radius: 999px;
         transform: translate(-50%, -50%);
         border: 2px solid #fff;
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
+      }
+
+      .overall-risk-scorechip {
+        position: absolute;
+        top: 0;
+        transform: translate(-50%, 0);
+        padding: 4px 8px;
+        background: rgba(255, 253, 249, 0.94);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
       }
 
       .overall-risk-labels {
@@ -845,14 +877,24 @@ function buildReportHtml(input: {
             <div class="overall-risk-segment low"></div>
             <div class="overall-risk-segment medium"></div>
             <div class="overall-risk-segment high"></div>
+            <div class="overall-risk-ticks">
+              ${Array.from({ length: 11 })
+                .map((_, i) => `<span style="left:${i * 10}%;"></span>`)
+                .join("")}
+            </div>
             ${input.memo.overallRiskScore === undefined || input.memo.overallRiskScore === null || Number.isNaN(overallRiskScore)
               ? ""
-              : `<div class="overall-risk-marker ${overallRiskMarkerClass}" style="left:${overallRiskPercent}%"></div>`}
+              : `<div class="overall-risk-marker-dot ${overallRiskMarkerClass}" style="left:${overallRiskPercent}%" aria-hidden="true"></div>`}
           </div>
           <div class="overall-risk-labels">
             <span>Lower</span>
             <span>Moderate</span>
             <span>High</span>
+          </div>
+          <div style="position:relative; height:24px;">
+            ${input.memo.overallRiskScore === undefined || input.memo.overallRiskScore === null || Number.isNaN(overallRiskScore)
+              ? ""
+              : `<div class="overall-risk-scorechip" style="left:${overallRiskPercent}%;">${overallRiskScore.toFixed(1)} / 10</div>`}
           </div>
         </div>
       </section>
@@ -1758,32 +1800,50 @@ export default function Home() {
             <div className="mt-4 rounded-2xl border border-line bg-white px-4 py-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
-                    Overall risk scale
-                  </span>
-                  <p className="mt-1 text-xs text-muted">
-                    Lower to high risk across the memo.
-                  </p>
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Overall risk scale</span>
+                  <p className="mt-1 text-xs text-muted">Lower to high risk across the memo.</p>
                 </div>
                 <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${overallRiskMeta.tone}`}>
                   {riskScoreLabel}
                 </span>
               </div>
-              <div className="mt-3 h-3 overflow-hidden rounded-full bg-panel-strong">
-                <div className="relative h-full w-full">
+
+              <div className="mt-3">
+                <div className="relative h-3 overflow-hidden rounded-full bg-panel-strong">
                   <div className="absolute inset-y-0 left-0 w-[35%] bg-emerald-500/90" />
                   <div className="absolute inset-y-0 left-[35%] w-[30%] bg-amber-500/90" />
                   <div className="absolute inset-y-0 left-[65%] w-[35%] bg-red-500/90" />
+                  <div className="absolute inset-0">
+                    {Array.from({ length: 11 }).map((_, index) => (
+                      <span
+                        key={index}
+                        aria-hidden="true"
+                        className="absolute top-0 h-3 w-px bg-white/45"
+                        style={{ left: `${index * 10}%` }}
+                      />
+                    ))}
+                  </div>
                   <div
-                    className={`absolute top-1/2 h-5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white shadow ${overallRiskMeta.fill}`}
+                    className={`absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow ${overallRiskMeta.fill}`}
                     style={{ left: `${overallRiskMeta.percent}%` }}
+                    aria-hidden="true"
                   />
                 </div>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted">
-                <span>Lower</span>
-                <span>Moderate</span>
-                <span>High</span>
+
+                <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted">
+                  <span>Lower</span>
+                  <span>Moderate</span>
+                  <span>High</span>
+                </div>
+
+                <div className="relative mt-2 h-6">
+                  <div
+                    className="absolute top-0 -translate-x-1/2 rounded-full border border-line bg-panel px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted shadow-sm"
+                    style={{ left: `${overallRiskMeta.percent}%` }}
+                  >
+                    {riskScoreLabel.replace(/^Risk\s*/, "")}
+                  </div>
+                </div>
               </div>
             </div>
             {isFallback ? (

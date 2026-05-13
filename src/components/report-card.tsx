@@ -171,21 +171,42 @@ const ReportCard = memo(function ReportCard({ report, onDownload, onRemove, badg
             </div>
             <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${overallMeta.tone}`}>{report.score.toFixed(1)} / 10</span>
           </div>
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-panel-strong">
-            <div className="relative h-full w-full">
+          <div className="mt-3">
+            <div className="relative h-3 overflow-hidden rounded-full bg-panel-strong">
               <div className="absolute inset-y-0 left-0 w-[35%] bg-emerald-500/90" />
               <div className="absolute inset-y-0 left-[35%] w-[30%] bg-amber-500/90" />
               <div className="absolute inset-y-0 left-[65%] w-[35%] bg-red-500/90" />
+              <div className="absolute inset-0">
+                {Array.from({ length: 11 }).map((_, index) => (
+                  <span
+                    key={index}
+                    aria-hidden="true"
+                    className="absolute top-0 h-3 w-px bg-white/45"
+                    style={{ left: `${index * 10}%` }}
+                  />
+                ))}
+              </div>
               <div
-                className={`absolute top-1/2 h-5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white shadow ${overallMeta.fill}`}
+                className={`absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow ${overallMeta.fill}`}
                 style={{ left: `${overallMeta.percent}%` }}
+                aria-hidden="true"
               />
             </div>
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted">
-            <span>Lower</span>
-            <span>Moderate</span>
-            <span>High</span>
+
+            <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted">
+              <span>Lower</span>
+              <span>Moderate</span>
+              <span>High</span>
+            </div>
+
+            <div className="relative mt-2 h-6">
+              <div
+                className="absolute top-0 -translate-x-1/2 rounded-full border border-line bg-panel px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted shadow-sm"
+                style={{ left: `${overallMeta.percent}%` }}
+              >
+                {report.score.toFixed(1)} / 10
+              </div>
+            </div>
           </div>
         </div>
       )}
