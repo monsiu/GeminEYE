@@ -88,6 +88,18 @@ const REVIEW_AREAS = [
   },
 ] as const;
 
+const SAMPLE_CONTRACTS = [
+  {
+    title: "Service Agreement Sample",
+    text: "SERVICE AGREEMENT\n\nThis Service Agreement ('Agreement') is entered into as of the date of acceptance by Client, between Service Provider ('Provider') and the Client entity identified in the online account ('Client').\n\n1. SERVICES: Provider shall provide cloud hosting services including server infrastructure, uptime monitoring, and technical support.\n\n2. LIABILITY: Provider's total liability shall not exceed the fees paid in the preceding 12 months. Provider is not liable for indirect, incidental, or consequential damages.\n\n3. TERM: This Agreement shall commence on the Effective Date and continue for one (1) year unless terminated earlier in accordance with this Agreement.\n\n4. TERMINATION: Either party may terminate for convenience with 30 days' written notice. Upon termination, Client's data will be retained for 30 days before deletion.\n\n5. INDEMNITY: Client shall indemnify Provider against claims that Client's content infringes third-party intellectual property rights.\n\n6. DATA PROTECTION: Provider shall maintain reasonable security measures consistent with industry standards to protect Client data.",
+  },
+  {
+    title: "NDA Sample",
+    text: "NON-DISCLOSURE AGREEMENT\n\nThis Non-Disclosure Agreement is entered into between Disclosing Party and Receiving Party.\n\n1. DEFINITION: Confidential Information means all non-public information disclosed by Disclosing Party in any form or medium.\n\n2. OBLIGATIONS: Receiving Party shall: (a) maintain confidentiality using reasonable care; (b) limit access to employees with a need to know; (c) not use the information except for the stated purpose.\n\n3. EXCEPTIONS: Confidential Information does not include information that: (a) was publicly available at disclosure; (b) becomes public through no breach; (c) is independently developed; (d) is rightfully received from a third party.\n\n4. TERM: This Agreement shall survive for three (3) years from disclosure.\n\n5. REMEDIES: Receiving Party acknowledges that breach may cause irreparable harm for which monetary damages are inadequate, and agrees that Disclosing Party shall be entitled to equitable relief.",
+  },
+];
+
+
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -759,6 +771,20 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
+    // Keyboard shortcuts: Ctrl+Enter to analyze, Esc to clear
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        runAnalysis();
+      } else if (event.key === "Escape") {
+        setActiveReviewArea(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
     let active = true;
 
     async function loadApiStatus() {
@@ -886,6 +912,26 @@ export default function Home() {
     setError(null);
 
     try {
+      // Check cache first (sessionStorage)
+      const cacheKey = `analysis_${contractTitle}_${contractText.substring(0, 100).replace(/[^a-z0-9]/gi, "")}`;
+      const cached = typeof window !== "undefined" ? sessionStorage.getItem(cacheKey) : null;
+      if (cached) {
+        const data = JSON.parse(cached) as {
+          memo?: MemoPayload;
+          fallback?: boolean;
+          error?: string;
+          contractTitle?: string;
+        };
+        if (data.memo) {
+          setMemo(data.memo);
+          setAnalyzedContractTitle(data.contractTitle || contractTitle);
+          setIsFallback(data.fallback || false);
+          if (data.error) setError(data.error);
+          setHasAnalysisResult(true);
+          return;
+        }
+      }
+
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -906,6 +952,16 @@ export default function Home() {
         error?: string;
         contractTitle?: string;
       };
+      
+      // Cache the result
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch (e) {
+          // Storage quota exceeded, silently fail
+        }
+      }
+
       if (data.memo) {
         setMemo(data.memo);
       }
@@ -1019,6 +1075,13 @@ export default function Home() {
       return;
     }
 
+    // File size validation
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      setError(`File is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max size is 10MB.`);
+      return;
+    }
+
     setFileStatus("Extracting text...");
     setError(null);
     setIsExtracting(true);
@@ -1055,6 +1118,46 @@ export default function Home() {
     }
   };
 
+  const loadSampleContract = (sample: typeof SAMPLE_CONTRACTS[0]) => {
+    setContractTitle(sample.title);
+    setContractText(sample.text);
+    setFileStatus(null);
+    setError(null);
+  };
+
+  const downloadReportAsJson = () => {
+    if (isFallback) {
+      setError("Demo fallback reports cannot be downloaded.");
+      return;
+    }
+    const json = JSON.stringify({
+      title: analyzedContractTitle || contractTitle,
+      generatedAt: new Date().toISOString(),
+      memo,
+    }, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(analyzedContractTitle || contractTitle).replace(/[^a-z0-9]/gi, "")}-analysis.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const checkApiConnection = async () => {
+    setApiStatus("checking");
+    try {
+      const response = await fetch("/api/status", { method: "GET" });
+      if (response.ok) {
+        setApiStatus("configured");
+      } else {
+        setApiStatus("missing");
+      }
+    } catch {
+      setApiStatus("unknown");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:gap-10 sm:px-6 sm:py-12">
@@ -1087,12 +1190,20 @@ export default function Home() {
                   {isLoading ? "Reviewing..." : hasAnalysisResult ? "Review complete" : "Start review"}
                 </button>
                 {hasAnalysisResult ? (
-                  <button
-                    onClick={resetAnalysis}
-                    className="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
-                  >
-                    Review again
-                  </button>
+                  <>
+                    <button
+                      onClick={resetAnalysis}
+                      className="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                    >
+                      Review again
+                    </button>
+                    <button
+                      onClick={downloadReportAsJson}
+                      className="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+                    >
+                      Export JSON
+                    </button>
+                  </>
                 ) : null}
                 <button
                   onClick={resetAll}
@@ -1101,6 +1212,9 @@ export default function Home() {
                   Clear all
                 </button>
               </div>
+              <p className="text-[10px] text-muted italic">
+                💡 Keyboard shortcuts: <code className="bg-panel px-1">Ctrl+Enter</code> to analyze, <code className="bg-panel px-1">Esc</code> to close tooltips.
+              </p>
               <div className="flex flex-col gap-3">
                 <span className="text-xs font-semibold uppercase tracking-[0.3em] text-muted">
                   Common review areas
@@ -1154,29 +1268,38 @@ export default function Home() {
                 <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-muted">
                   Contract intake
                 </h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs uppercase tracking-[0.2em] text-muted">
-                    Gemini status
-                  </span>
-                  <span
-                    className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
-                      apiStatus === "checking"
-                        ? "border-line bg-panel text-muted"
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs uppercase tracking-[0.2em] text-muted">
+                      Gemini status
+                    </span>
+                    <span
+                      className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
+                        apiStatus === "checking"
+                          ? "border-line bg-panel text-muted"
+                          : apiStatus === "unknown"
+                          ? "border-line bg-panel text-muted"
+                          : apiStatus === "configured"
+                          ? "border-slate-200 bg-slate-50 text-slate-700"
+                          : "border-stone-200 bg-stone-50 text-stone-700"
+                      }`}
+                    >
+                      {apiStatus === "checking"
+                        ? "Checking"
                         : apiStatus === "unknown"
-                        ? "border-line bg-panel text-muted"
+                        ? "Not checked"
                         : apiStatus === "configured"
-                        ? "border-slate-200 bg-slate-50 text-slate-700"
-                        : "border-stone-200 bg-stone-50 text-stone-700"
-                    }`}
+                        ? "Configured"
+                        : "Missing"}
+                    </span>
+                  </div>
+                  <button
+                    onClick={checkApiConnection}
+                    disabled={apiStatus === "checking"}
+                    className="text-[10px] font-medium text-accent transition hover:text-accent/80 disabled:text-muted"
                   >
-                    {apiStatus === "checking"
-                      ? "Checking"
-                      : apiStatus === "unknown"
-                      ? "Not checked"
-                      : apiStatus === "configured"
-                      ? "Configured"
-                      : "Missing"}
-                  </span>
+                    Check
+                  </button>
                 </div>
               </div>
               <div className="mt-4 grid gap-4">
@@ -1201,7 +1324,23 @@ export default function Home() {
                     onChange={handleFileUpload}
                     className="rounded-xl border border-dashed border-line bg-panel-strong p-3 text-sm text-muted"
                   />
+                  <span className="text-[10px] text-muted italic">Files over 5MB may take longer to process. Max size is 10MB.</span>
                 </label>
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-medium text-muted">Or try an example:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {SAMPLE_CONTRACTS.map((sample) => (
+                      <button
+                        key={sample.title}
+                        type="button"
+                        onClick={() => loadSampleContract(sample)}
+                        className="rounded-lg border border-accent bg-white px-3 py-1.5 text-xs font-medium text-accent transition hover:bg-accent hover:text-white"
+                      >
+                        {sample.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <label className="flex flex-col gap-2 text-sm font-medium text-ink">
                   Paste contract text
                   <textarea

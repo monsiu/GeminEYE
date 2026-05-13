@@ -189,6 +189,9 @@ async function callAiMlApi(prompt: string) {
 
   let response: Response;
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    
     response = await fetch(completionsUrl, {
       method: "POST",
       headers,
@@ -198,23 +201,38 @@ async function callAiMlApi(prompt: string) {
         temperature: 0.2,
         max_tokens: 50000,
       }),
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeout);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "AI/ML API request failed.";
+    const errorMsg = message.includes("abort") 
+      ? "Analysis took too long (timeout). Try with a shorter contract or retry."
+      : message;
     return {
       memo: DEFAULT_MEMO,
       fallback: true,
       keyLoaded: true,
-      error: error instanceof Error ? error.message : "AI/ML API request failed.",
+      error: errorMsg,
     };
   }
 
   if (!response.ok) {
     const bodyText = await response.text();
+    let errorMsg = `AI/ML API error (${response.status}).`;
+    if (response.status === 401) {
+      errorMsg = "API key invalid or expired.";
+    } else if (response.status === 429) {
+      errorMsg = "API rate limit exceeded. Please try again in a moment.";
+    } else if (response.status >= 500) {
+      errorMsg = "AI/ML service temporarily unavailable. Try again soon.";
+    }
     return {
       memo: DEFAULT_MEMO,
       fallback: true,
       keyLoaded: true,
-      error: `AI/ML API request failed (${response.status}). ${bodyText}`,
+      error: errorMsg,
     };
   }
 
@@ -228,7 +246,7 @@ async function callAiMlApi(prompt: string) {
       memo: DEFAULT_MEMO,
       fallback: true,
       keyLoaded: true,
-      error: "AI/ML API returned empty content.",
+      error: "AI/ML API returned empty content. Try a different contract.",
     };
   }
   
@@ -239,7 +257,7 @@ async function callAiMlApi(prompt: string) {
       memo: DEFAULT_MEMO,
       fallback: true,
       keyLoaded: true,
-      error: "AI/ML API returned invalid JSON format.",
+      error: "AI/ML API returned invalid format. Check logs for details.",
     };
   }
 
@@ -271,7 +289,10 @@ export async function POST(request: Request) {
     });
   }
 
-  const prompt = `You are an investigator-style contract risk analyst.\nReturn JSON only with this exact shape:\n{\n  "narrative": ["short paragraph 1", "short paragraph 2"],\n  "summary": ["..."],\n  "findings": [\n    {"id":"R-01","risk":"Low|Medium|High","category":"...","evidence":"...","recommendation":"..."}\n  ],\n  "overallRiskScore": 0-10\n}\nWrite the narrative as brief, plain-language reasoning (no step-by-step chain-of-thought).\nFocus on liability, indemnity, termination, data privacy, IP, and governing law.\nUse concise evidence quotes.\nContract text:\n"""\n${payload.text}\n"""`;
+  // Strip excess whitespace from contract text to reduce payload size
+  const compressedText = text.replace(/\s+/g, " ").trim();
+
+  const prompt = `You are an investigator-style contract risk analyst.\nReturn JSON only with this exact shape:\n{\n  "narrative": ["short paragraph 1", "short paragraph 2"],\n  "summary": ["..."],\n  "findings": [\n    {"id":"R-01","risk":"Low|Medium|High","category":"...","evidence":"...","recommendation":"..."}\n  ],\n  "overallRiskScore": 0-10\n}\nWrite the narrative as brief, plain-language reasoning (no step-by-step chain-of-thought).\nFocus on liability, indemnity, termination, data privacy, IP, and governing law.\nUse concise evidence quotes.\nContract text:\n"""\n${compressedText}\n"""`;
 
   const aiMlResult = await callAiMlApi(prompt);
   if (aiMlResult) {
@@ -294,6 +315,9 @@ export async function POST(request: Request) {
 
   let response: Response | null = null;
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    
     response = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
         apiKey,
@@ -308,26 +332,40 @@ export async function POST(request: Request) {
             responseMimeType: "application/json",
           },
         }),
+        signal: controller.signal,
       }
     );
+    
+    clearTimeout(timeout);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Gemini API request failed.";
+    const errorMsg = message.includes("abort") 
+      ? "Analysis took too long (timeout). Try with a shorter contract or retry."
+      : message;
     return NextResponse.json({
       contractTitle: payload.contractTitle ?? "Untitled contract",
       memo: DEFAULT_MEMO,
       fallback: true,
       keyLoaded: true,
-      error: error instanceof Error ? error.message : "Gemini API request failed.",
+      error: errorMsg,
     });
   }
 
   if (!response.ok) {
-    const bodyText = await response.text();
+    let errorMsg = `Gemini API error (${response.status}).`;
+    if (response.status === 401) {
+      errorMsg = "Gemini API key invalid or expired.";
+    } else if (response.status === 429) {
+      errorMsg = "Gemini rate limit exceeded. Try again soon.";
+    } else if (response.status >= 500) {
+      errorMsg = "Gemini service temporarily unavailable.";
+    }
     return NextResponse.json({
       contractTitle: payload.contractTitle ?? "Untitled contract",
       memo: DEFAULT_MEMO,
       fallback: true,
       keyLoaded: true,
-      error: `Gemini API request failed (${response.status}). ${bodyText}`,
+      error: errorMsg,
     });
   }
 
