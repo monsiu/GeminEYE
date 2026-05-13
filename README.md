@@ -252,7 +252,7 @@ gemineye/
 
 ---
 
-## � Security & Secrets Management
+## 🔒 Security & Secrets Management
 
 This project uses environment variables for API keys. **Never commit `.env.local` with real credentials.**
 
@@ -273,14 +273,14 @@ npm run check-secrets
 Or manually:
 
 ```bash
-bash scripts/check-secrets.sh
+node scripts/check-secrets.js
 ```
 
 This scans staged files for common API key patterns and warns you before commit.
 
 ---
 
-## �🐛 Troubleshooting
+## Bugs & Troubleshooting
 
 ### "AI/ML API returned invalid JSON format"
 - ✅ Verify `AI_ML_API_KEY` and `AI_ML_API_MODEL` are in `.env.local`
