@@ -923,10 +923,38 @@ export default function Home() {
           contractTitle?: string;
         };
         if (data.memo) {
-          setMemo(data.memo);
-          setAnalyzedContractTitle(data.contractTitle || contractTitle);
-          setIsFallback(data.fallback || false);
+          const resolvedMemo = data.memo;
+          const resolvedContractTitle = (data.contractTitle?.trim() || contractTitle.trim() || "Contract Review");
+          const resolvedFallback = data.fallback || false;
+
+          setMemo(resolvedMemo);
+          setAnalyzedContractTitle(resolvedContractTitle);
+          setIsFallback(resolvedFallback);
           if (data.error) setError(data.error);
+
+          const generatedReportHtml = buildReportHtml({
+            contractTitle: resolvedContractTitle,
+            contractText,
+            memo: resolvedMemo,
+            fallback: resolvedFallback,
+          });
+
+          // Re-add cached analyses back to the dashboard when the report is opened again.
+          if (!resolvedFallback) {
+            saveReportToStorage({
+              id: `${Date.now()}`,
+              title: resolvedContractTitle,
+              score:
+                resolvedMemo.overallRiskScore === undefined || resolvedMemo.overallRiskScore === null
+                  ? null
+                  : Number(resolvedMemo.overallRiskScore),
+              label: riskLabel(resolvedMemo.overallRiskScore),
+              createdAt: new Date().toISOString(),
+              findings: resolvedMemo.findings,
+              html: generatedReportHtml,
+            });
+          }
+
           setHasAnalysisResult(true);
           return;
         }
