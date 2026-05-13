@@ -32,7 +32,85 @@ function formatDateTimeLocal(iso?: string) {
   }
 }
 
+function riskFillTone(risk: "Low" | "Medium" | "High") {
+  if (risk === "High") return "bg-red-500";
+  if (risk === "Medium") return "bg-amber-500";
+  return "bg-emerald-500";
+}
+
+function riskFillWidth(risk: "Low" | "Medium" | "High") {
+  if (risk === "High") return "100%";
+  if (risk === "Medium") return "66%";
+  return "33%";
+}
+
+function scoreMeta(score?: number | null) {
+  if (score === undefined || score === null || Number.isNaN(Number(score))) {
+    return {
+      tone: "border-line bg-panel-strong text-muted",
+      fill: "bg-line",
+      percent: 0,
+    };
+  }
+
+  const numeric = Number(score);
+  if (numeric >= 6.5) {
+    return {
+      tone: "border-red-200 bg-red-50 text-red-700",
+      fill: "bg-red-500",
+      percent: Math.min(100, Math.max(0, (numeric / 10) * 100)),
+    };
+  }
+
+  if (numeric >= 3.5) {
+    return {
+      tone: "border-amber-200 bg-amber-50 text-amber-800",
+      fill: "bg-amber-500",
+      percent: Math.min(100, Math.max(0, (numeric / 10) * 100)),
+    };
+  }
+
+  return {
+    tone: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    fill: "bg-emerald-500",
+    percent: Math.min(100, Math.max(0, (numeric / 10) * 100)),
+  };
+}
+
+function RiskIcon({ risk }: { risk: "Low" | "Medium" | "High" }) {
+  const tone =
+    risk === "High"
+      ? "border-red-200 bg-red-50 text-red-700"
+      : risk === "Medium"
+        ? "border-amber-200 bg-amber-50 text-amber-800"
+        : "border-emerald-200 bg-emerald-50 text-emerald-700";
+
+  return (
+    <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${tone}`} aria-hidden="true">
+      {risk === "High" ? (
+        <svg viewBox="0 0 20 20" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10 2.3 18 16H2L10 2.3Z" />
+          <path d="M10 7v4.2" />
+          <path d="M10 13.8h.01" />
+        </svg>
+      ) : risk === "Medium" ? (
+        <svg viewBox="0 0 20 20" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="10" cy="10" r="7.2" />
+          <path d="M10 5.8v4.5" />
+          <path d="M10 13.8h.01" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 20 20" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="10" cy="10" r="7.2" />
+          <path d="m6.6 10.3 2.1 2.1L13.5 7.8" />
+        </svg>
+      )}
+    </span>
+  );
+}
+
 const ReportCard = memo(function ReportCard({ report, onDownload, onRemove, badgeClass }: ReportCardProps) {
+  const overallMeta = scoreMeta(report.score ?? null);
   return (
     <div className="rounded-3xl border border-line bg-panel p-6">
       <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -84,6 +162,34 @@ const ReportCard = memo(function ReportCard({ report, onDownload, onRemove, badg
         )}
       </div>
 
+      {report.score !== null && report.score !== undefined && (
+        <div className="mt-4 rounded-2xl border border-line bg-white px-4 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">Overall risk scale</span>
+              <p className="mt-1 text-xs text-muted">Score trend from lower to high risk.</p>
+            </div>
+            <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${overallMeta.tone}`}>{report.score.toFixed(1)} / 10</span>
+          </div>
+          <div className="mt-3 h-3 overflow-hidden rounded-full bg-panel-strong">
+            <div className="relative h-full w-full">
+              <div className="absolute inset-y-0 left-0 w-[35%] bg-emerald-500/90" />
+              <div className="absolute inset-y-0 left-[35%] w-[30%] bg-amber-500/90" />
+              <div className="absolute inset-y-0 left-[65%] w-[35%] bg-red-500/90" />
+              <div
+                className={`absolute top-1/2 h-5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white shadow ${overallMeta.fill}`}
+                style={{ left: `${overallMeta.percent}%` }}
+              />
+            </div>
+          </div>
+          <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted">
+            <span>Lower</span>
+            <span>Moderate</span>
+            <span>High</span>
+          </div>
+        </div>
+      )}
+
       {report.findings && report.findings.length > 0 && (
         <details className="mt-4">
           <summary className="text-sm font-semibold text-ink">View findings</summary>
@@ -92,8 +198,32 @@ const ReportCard = memo(function ReportCard({ report, onDownload, onRemove, badg
           </p>
           <ul className="mt-3 space-y-2">
             {report.findings.map((finding) => (
-              <li key={finding.id} className="border-l border-line pl-4 text-xs text-muted wrap-break-word">
-                <strong>{finding.category}:</strong> {finding.evidence}
+              <li key={finding.id} className="rounded-2xl border border-line bg-white p-3 text-xs text-muted wrap-break-word">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <RiskIcon risk={finding.risk} />
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">{finding.id}</div>
+                      <div className="mt-1 text-sm font-semibold text-ink">{finding.category}</div>
+                    </div>
+                  </div>
+                  <span className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${badgeClass(finding.risk)}`}>
+                    {finding.risk}
+                  </span>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-panel-strong">
+                  <div
+                    className={`h-full rounded-full ${riskFillTone(finding.risk)}`}
+                    style={{ width: riskFillWidth(finding.risk) }}
+                  />
+                </div>
+                <div className="mt-1 flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
+                  <span>Lower</span>
+                  <span>Moderate</span>
+                  <span>High</span>
+                </div>
+                <p className="mt-3 text-muted"><strong>Evidence:</strong> {finding.evidence}</p>
+                <p className="mt-2 text-ink"><strong>Recommendation:</strong> {finding.recommendation}</p>
               </li>
             ))}
           </ul>

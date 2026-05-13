@@ -180,7 +180,27 @@ function buildReportHtml(input: {
       ? "-"
       : Number(input.memo.overallRiskScore).toFixed(1);
   const narrativeToneClass = narrativeSeverityClass(input.memo.overallRiskScore);
-
+  const overallRiskScore = Number(input.memo.overallRiskScore);
+  const overallRiskPercent =
+    input.memo.overallRiskScore === undefined || input.memo.overallRiskScore === null || Number.isNaN(overallRiskScore)
+      ? 0
+      : Math.min(100, Math.max(0, (overallRiskScore / 10) * 100));
+  const overallRiskMarkerClass =
+    input.memo.overallRiskScore === undefined || input.memo.overallRiskScore === null || Number.isNaN(overallRiskScore)
+      ? "bg-[#6a5f55]"
+      : overallRiskScore >= 6.5
+        ? "bg-[#dc2626]"
+        : overallRiskScore >= 3.5
+          ? "bg-[#d97706]"
+          : "bg-[#059669]";
+  const overallRiskToneClass =
+    input.memo.overallRiskScore === undefined || input.memo.overallRiskScore === null || Number.isNaN(overallRiskScore)
+      ? "badge"
+      : overallRiskScore >= 6.5
+        ? "badge badge-high"
+        : overallRiskScore >= 3.5
+          ? "badge badge-medium"
+          : "badge badge-low";
   const narrative = input.memo.narrative
     .map((item) => `<p>${highlightRiskTerms(item)}</p>`)
     .join("");
@@ -194,10 +214,20 @@ function buildReportHtml(input: {
       (item) => `
         <article class="finding">
           <div class="finding-head">
-            <span>${escapeHtml(item.id)}</span>
+            <div class="finding-title-wrap">
+              <span class="finding-icon icon-${item.risk.toLowerCase()}">${item.risk === "High" ? "!" : item.risk === "Medium" ? "•" : "✓"}</span>
+              <div>
+                <span class="finding-id">${escapeHtml(item.id)}</span>
+                <h3>${escapeHtml(item.category)}</h3>
+              </div>
+            </div>
             <span class="badge badge-${item.risk.toLowerCase()}">${escapeHtml(item.risk)}</span>
           </div>
-          <h3>${escapeHtml(item.category)}</h3>
+          <div class="risk-meter" aria-label="${escapeHtml(item.risk)} risk level">
+            <div class="risk-meter-track">
+              <div class="risk-meter-fill risk-meter-fill-${item.risk.toLowerCase()}" style="width:${item.risk === "High" ? "100%" : item.risk === "Medium" ? "66%" : "33%"}"></div>
+            </div>
+          </div>
           <p class="label">Evidence</p>
           <p>${escapeHtml(item.evidence)}</p>
           <p class="label">Recommendation</p>
@@ -489,6 +519,65 @@ function buildReportHtml(input: {
       .badge-medium { color: #92400e; background: #fffbeb; border-color: #fde68a; }
       .badge-low { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
 
+      .overall-risk-scale {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .overall-risk-track {
+        position: relative;
+        height: 12px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--panel-strong);
+      }
+
+      .overall-risk-segment {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+      }
+
+      .overall-risk-segment.low {
+        left: 0;
+        width: 35%;
+        background: linear-gradient(90deg, rgba(52, 211, 153, 0.95), rgba(5, 150, 105, 0.95));
+      }
+
+      .overall-risk-segment.medium {
+        left: 35%;
+        width: 30%;
+        background: linear-gradient(90deg, rgba(251, 191, 36, 0.95), rgba(217, 119, 6, 0.95));
+      }
+
+      .overall-risk-segment.high {
+        left: 65%;
+        width: 35%;
+        background: linear-gradient(90deg, rgba(248, 113, 113, 0.95), rgba(220, 38, 38, 0.95));
+      }
+
+      .overall-risk-marker {
+        position: absolute;
+        top: 50%;
+        width: 10px;
+        height: 22px;
+        border-radius: 999px;
+        transform: translate(-50%, -50%);
+        border: 2px solid #fff;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+      }
+
+      .overall-risk-labels {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
       .section-body p, .section-body li {
         color: var(--foreground);
         line-height: 1.7;
@@ -561,6 +650,39 @@ function buildReportHtml(input: {
         background: #fff;
       }
 
+      .finding-title-wrap {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .finding-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-size: 16px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      .finding-icon.icon-high { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+      .finding-icon.icon-medium { color: #92400e; background: #fffbeb; border-color: #fde68a; }
+      .finding-icon.icon-low { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
+
+      .finding-id {
+        display: inline-block;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+
       .finding-head {
         display: flex;
         justify-content: space-between;
@@ -569,6 +691,40 @@ function buildReportHtml(input: {
         color: var(--muted);
         font-size: 12px;
         margin-bottom: 10px;
+      }
+
+      .finding-head h3 {
+        font-size: 28px;
+        margin: 0;
+      }
+
+      .risk-meter {
+        margin: 8px 0 12px;
+      }
+
+      .risk-meter-track {
+        position: relative;
+        height: 10px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--panel-strong);
+      }
+
+      .risk-meter-fill {
+        height: 100%;
+        border-radius: 999px;
+      }
+
+      .risk-meter-fill-high {
+        background: linear-gradient(90deg, #f87171, #dc2626);
+      }
+
+      .risk-meter-fill-medium {
+        background: linear-gradient(90deg, #fbbf24, #d97706);
+      }
+
+      .risk-meter-fill-low {
+        background: linear-gradient(90deg, #34d399, #059669);
       }
 
       .finding h3 {
@@ -672,6 +828,31 @@ function buildReportHtml(input: {
           <div class="meta-card">
             <span class="label">Contract title</span>
             <div class="value">${escapeHtml(title)}</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>Overall risk scale</h2>
+            <p>Score trend from lower to high risk across the memo.</p>
+          </div>
+          <span class="${overallRiskToneClass}">${escapeHtml(riskLabel(input.memo.overallRiskScore))}</span>
+        </div>
+        <div class="overall-risk-scale">
+          <div class="overall-risk-track" aria-label="Overall risk scale">
+            <div class="overall-risk-segment low"></div>
+            <div class="overall-risk-segment medium"></div>
+            <div class="overall-risk-segment high"></div>
+            ${input.memo.overallRiskScore === undefined || input.memo.overallRiskScore === null || Number.isNaN(overallRiskScore)
+              ? ""
+              : `<div class="overall-risk-marker ${overallRiskMarkerClass}" style="left:${overallRiskPercent}%"></div>`}
+          </div>
+          <div class="overall-risk-labels">
+            <span>Lower</span>
+            <span>Moderate</span>
+            <span>High</span>
           </div>
         </div>
       </section>
@@ -872,6 +1053,85 @@ export default function Home() {
     }
     return "border-emerald-200 bg-emerald-50 text-emerald-700";
   };
+
+  const riskFillTone = (risk: MemoFinding["risk"]) => {
+    if (risk === "High") {
+      return "bg-red-500";
+    }
+    if (risk === "Medium") {
+      return "bg-amber-500";
+    }
+    return "bg-emerald-500";
+  };
+
+  const riskFillWidth = (risk: MemoFinding["risk"]) => {
+    if (risk === "High") {
+      return "100%";
+    }
+    if (risk === "Medium") {
+      return "66%";
+    }
+    return "33%";
+  };
+
+  const overallRiskMeta = (() => {
+    const score = Number(memo.overallRiskScore);
+    if (memo.overallRiskScore === undefined || memo.overallRiskScore === null || Number.isNaN(score)) {
+      return {
+        tone: "border-line bg-panel-strong text-muted",
+        fill: "bg-line",
+        percent: 0,
+      };
+    }
+
+    if (score >= 6.5) {
+      return {
+        tone: "border-red-200 bg-red-50 text-red-700",
+        fill: "bg-red-500",
+        percent: Math.min(100, Math.max(0, (score / 10) * 100)),
+      };
+    }
+
+    if (score >= 3.5) {
+      return {
+        tone: "border-amber-200 bg-amber-50 text-amber-800",
+        fill: "bg-amber-500",
+        percent: Math.min(100, Math.max(0, (score / 10) * 100)),
+      };
+    }
+
+    return {
+      tone: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      fill: "bg-emerald-500",
+      percent: Math.min(100, Math.max(0, (score / 10) * 100)),
+    };
+  })();
+
+  function RiskIcon({ risk }: { risk: MemoFinding["risk"] }) {
+    const tone = riskTone(risk);
+    return (
+      <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${tone}`} aria-hidden="true">
+        {risk === "High" ? (
+          <svg viewBox="0 0 20 20" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 2.3 18 16H2L10 2.3Z" />
+            <path d="M10 7v4.2" />
+            <path d="M10 13.8h.01" />
+          </svg>
+        ) : risk === "Medium" ? (
+          <svg viewBox="0 0 20 20" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="10" cy="10" r="7.2" />
+            <path d="M10 5.8v4.5" />
+            <path d="M10 13.8h.01" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 20 20" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="10" cy="10" r="7.2" />
+            <path d="m6.6 10.3 2.1 2.1L13.5 7.8" />
+          </svg>
+        )}
+      </span>
+    );
+  }
 
   const resetAll = () => {
     setContractTitle("");
@@ -1495,6 +1755,37 @@ export default function Home() {
                 )}
               </div>
             </div>
+            <div className="mt-4 rounded-2xl border border-line bg-white px-4 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                    Overall risk scale
+                  </span>
+                  <p className="mt-1 text-xs text-muted">
+                    Lower to high risk across the memo.
+                  </p>
+                </div>
+                <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${overallRiskMeta.tone}`}>
+                  {riskScoreLabel}
+                </span>
+              </div>
+              <div className="mt-3 h-3 overflow-hidden rounded-full bg-panel-strong">
+                <div className="relative h-full w-full">
+                  <div className="absolute inset-y-0 left-0 w-[35%] bg-emerald-500/90" />
+                  <div className="absolute inset-y-0 left-[35%] w-[30%] bg-amber-500/90" />
+                  <div className="absolute inset-y-0 left-[65%] w-[35%] bg-red-500/90" />
+                  <div
+                    className={`absolute top-1/2 h-5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white shadow ${overallRiskMeta.fill}`}
+                    style={{ left: `${overallRiskMeta.percent}%` }}
+                  />
+                </div>
+              </div>
+              <div className="mt-2 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted">
+                <span>Lower</span>
+                <span>Moderate</span>
+                <span>High</span>
+              </div>
+            </div>
             {isFallback ? (
               <div className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">
                 <div>Demo fallback: this memo is sample text shown because live analysis failed.</div>
@@ -1536,16 +1827,36 @@ export default function Home() {
                 </h3>
                 {memo.findings.map((item) => (
                   <div key={item.id} className="rounded-2xl border border-line bg-white p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
-                      <span className="wrap-break-word">{item.id}</span>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <RiskIcon risk={item.risk} />
+                        <div className="min-w-0">
+                          <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+                            {item.id}
+                          </div>
+                          <div className="mt-1 text-sm font-semibold text-ink">
+                            {item.category}
+                          </div>
+                        </div>
+                      </div>
                       <span className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${riskTone(item.risk)}`}>
                         {item.risk}
                       </span>
                     </div>
-                    <div className="mt-2 text-sm text-ink">
-                      {item.category}
+                    <div className="mt-3">
+                      <div className="h-2 overflow-hidden rounded-full bg-panel-strong">
+                        <div
+                          className={`h-full rounded-full ${riskFillTone(item.risk)}`}
+                          style={{ width: riskFillWidth(item.risk) }}
+                        />
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-[10px] uppercase tracking-[0.16em] text-muted">
+                        <span>Lower</span>
+                        <span>Moderate</span>
+                        <span>High</span>
+                      </div>
                     </div>
-                    <p className="mt-2 text-xs text-muted">
+                    <p className="mt-3 text-xs text-muted">
                       {item.evidence}
                     </p>
                     <p className="mt-2 text-xs text-ink">
