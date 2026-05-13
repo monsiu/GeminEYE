@@ -148,6 +148,15 @@ html[data-theme="light"] {
   outline: none;
 }
 
+/* Extra small screens (<= 360px) adjustments to prevent overflow */
+@media (max-width: 360px) {
+  .paper-hero { padding: 12px !important; }
+  main { padding-left: 8px !important; padding-right: 8px !important; }
+  .btn-inverse, .button-pop, .rounded-full { padding-left: 8px !important; padding-right: 8px !important; }
+  h1 { font-size: 1.25rem !important; }
+  .wrap-break-word { word-break: break-word; }
+}
+
 .soft-shadow {
   box-shadow: 0 30px 70px rgba(40, 31, 22, 0.12);
 }

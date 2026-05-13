@@ -17,12 +17,13 @@
     "type": "git",
     "url": "https://github.com/monsiu/gemineye.git"
   },
-  "private": true,
+  "private": false,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check-secrets": "node scripts/check-secrets.js"
   },
   "dependencies": {
     "mammoth": "^1.12.0",

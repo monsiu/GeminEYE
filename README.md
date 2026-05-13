@@ -252,7 +252,35 @@ gemineye/
 
 ---
 
-## 🐛 Troubleshooting
+## � Security & Secrets Management
+
+This project uses environment variables for API keys. **Never commit `.env.local` with real credentials.**
+
+### Guidelines
+
+- **`.env.local`** - Local file with your real API keys (listed in `.gitignore`, not committed)
+- **`.env.local.example`** - Template with placeholder values, safe to commit
+- **Copy and fill**: `cp .env.local.example .env.local` and add your actual keys
+
+### Pre-commit Secret Check
+
+Before pushing code, run the secret-scan helper to catch accidental credential commits:
+
+```bash
+npm run check-secrets
+```
+
+Or manually:
+
+```bash
+bash scripts/check-secrets.sh
+```
+
+This scans staged files for common API key patterns and warns you before commit.
+
+---
+
+## �🐛 Troubleshooting
 
 ### "AI/ML API returned invalid JSON format"
 - ✅ Verify `AI_ML_API_KEY` and `AI_ML_API_MODEL` are in `.env.local`
@@ -316,6 +344,14 @@ See `package.json` for the complete list.
 ## 📝 License
 
 MIT License — See LICENSE for details.
+
+---
+
+## Open Source
+
+This project is released under the MIT License. You may copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided you include the original copyright and license notice in any substantial portions of the software.
+
+For the full license text, see the `LICENSE` file.
 
 ---
 
