@@ -55,6 +55,39 @@ const SAMPLE_MEMO: MemoPayload = {
   overallRiskScore: undefined,
 };
 
+const REVIEW_AREAS = [
+  {
+    label: "Liability",
+    description:
+      "Limits financial and legal exposure if something goes wrong under the agreement.",
+  },
+  {
+    label: "Indemnity",
+    description:
+      "Defines who must defend and cover losses when third-party claims are made.",
+  },
+  {
+    label: "Privacy",
+    description:
+      "Explains how personal or sensitive data is collected, used, shared, and protected.",
+  },
+  {
+    label: "Termination",
+    description:
+      "Sets when and how either party can end the contract and what happens afterward.",
+  },
+  {
+    label: "IP",
+    description:
+      "Clarifies ownership and usage rights for intellectual property, including deliverables.",
+  },
+  {
+    label: "Venue",
+    description:
+      "Specifies which location and legal forum governs disputes and enforcement.",
+  },
+] as const;
+
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -721,6 +754,8 @@ export default function Home() {
   const [isExtracting, setIsExtracting] = useState(false);
   const [apiStatus, setApiStatus] = useState<"checking" | "unknown" | "configured" | "missing">("checking");
   const [isFallback, setIsFallback] = useState<boolean>(false);
+  const [activeReviewArea, setActiveReviewArea] = useState<string | null>(null);
+  const reviewAreasRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -754,6 +789,28 @@ export default function Home() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!activeReviewArea) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!reviewAreasRef.current) {
+        return;
+      }
+
+      const target = event.target;
+      if (target instanceof Node && !reviewAreasRef.current.contains(target)) {
+        setActiveReviewArea(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [activeReviewArea]);
 
   const riskScoreLabel = useMemo(() => {
     if (memo.overallRiskScore === undefined || memo.overallRiskScore === null) {
@@ -800,6 +857,7 @@ export default function Home() {
     setFileStatus(null);
     setIsExtracting(false);
     setIsFallback(false);
+    setActiveReviewArea(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -810,6 +868,7 @@ export default function Home() {
     setAnalyzedContractTitle("");
     setError(null);
     setIsFallback(false);
+    setActiveReviewArea(null);
   };
 
   const runAnalysis = async () => {
@@ -1046,17 +1105,46 @@ export default function Home() {
                 <span className="text-xs font-semibold uppercase tracking-[0.3em] text-muted">
                   Common review areas
                 </span>
-                <div className="grid grid-cols-2 gap-3 text-xs text-muted md:grid-cols-3">
-                  {["Liability", "Indemnity", "Privacy", "Termination", "IP", "Venue"].map(
-                    (label) => (
-                      <span
-                        key={label}
-                        className="rounded-full border border-line bg-white px-3 py-1 text-center uppercase tracking-[0.2em]"
+                <p className="text-[11px] text-muted">
+                  Hover or tap a label to see what it means.
+                </p>
+                <div ref={reviewAreasRef} className="grid grid-cols-2 gap-3 text-xs text-muted md:grid-cols-3">
+                  {REVIEW_AREAS.map((area) => (
+                    <div key={area.label} className="relative">
+                      <button
+                        type="button"
+                        onMouseEnter={() => setActiveReviewArea(area.label)}
+                        onMouseLeave={() => setActiveReviewArea((current) => (current === area.label ? null : current))}
+                        onFocus={() => setActiveReviewArea(area.label)}
+                        onBlur={() => setActiveReviewArea((current) => (current === area.label ? null : current))}
+                        onClick={() =>
+                          setActiveReviewArea((current) => (current === area.label ? null : area.label))
+                        }
+                        onKeyDown={(event) => {
+                          if (event.key === "Escape") {
+                            setActiveReviewArea(null);
+                          }
+                        }}
+                        aria-describedby={`review-area-tip-${area.label.toLowerCase()}`}
+                        aria-expanded={activeReviewArea === area.label}
+                        className="w-full rounded-full border border-line bg-white px-3 py-1 text-center uppercase tracking-[0.2em] transition hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
-                        {label}
-                      </span>
-                    )
-                  )}
+                        {area.label}
+                      </button>
+                      <div
+                        id={`review-area-tip-${area.label.toLowerCase()}`}
+                        role="tooltip"
+                        className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-52 -translate-x-1/2 rounded-xl border border-line bg-panel p-2 text-left text-[11px] normal-case tracking-normal text-ink shadow-lg transition duration-150 ${
+                          activeReviewArea === area.label
+                            ? "visible translate-y-0 opacity-100"
+                            : "invisible -translate-y-1 opacity-0"
+                        }`}
+                      >
+                        <span className="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border-l border-t border-line bg-panel" />
+                        {area.description}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
