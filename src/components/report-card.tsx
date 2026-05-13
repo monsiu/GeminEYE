@@ -87,6 +87,9 @@ const ReportCard = memo(function ReportCard({ report, onDownload, onRemove, badg
       {report.findings && report.findings.length > 0 && (
         <details className="mt-4 cursor-pointer">
           <summary className="text-sm font-semibold text-ink">View findings</summary>
+          <p className="mt-2 rounded-2xl border border-dashed border-line bg-panel-strong px-3 py-2 text-xs text-muted">
+            These are the headline findings only. Download the report to read the full reasoning, clause-by-clause evidence, and recommended edits.
+          </p>
           <ul className="mt-3 space-y-2">
             {report.findings.map((finding) => (
               <li key={finding.id} className="text-xs text-muted pl-4 border-l border-line">
