@@ -214,9 +214,14 @@ button, a[role="button"], [role="button"] {
 }
 
 .sample-contract-button:hover {
-  background-color: var(--accent);
+  background-color: var(--accent-strong);
   border-color: var(--accent-strong);
   color: #ffffff;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme="light"] .sample-contract-button:hover {
+  color: #ffffff !important;
 }
 
 html[data-theme="dark"] .sample-contract-button {
@@ -228,7 +233,7 @@ html[data-theme="dark"] .sample-contract-button {
 html[data-theme="dark"] .sample-contract-button:hover {
   background-color: var(--accent-strong) !important;
   border-color: var(--accent-strong) !important;
-  color: var(--panel) !important;
+  color: #151d22 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

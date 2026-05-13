@@ -133,7 +133,7 @@ const ReportCard = memo(function ReportCard({ report, onDownload, onRemove, badg
           </button>
           <button
             onClick={() => onRemove(report.id)}
-            className="button-pop inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-signal bg-white px-4 py-2 text-xs font-semibold text-signal transition hover:-translate-y-0.5 hover:border-red-600 hover:bg-red-50 hover:text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal/50 dark:border-red-600 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300 sm:flex-none"
+            className="button-pop inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-signal bg-signal px-4 py-2 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:border-red-600 hover:bg-red-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-signal/50 dark:border-red-500 dark:bg-red-600 dark:text-white dark:hover:border-red-400 dark:hover:bg-red-500 sm:flex-none"
             title="Delete report"
             aria-label={`Delete ${report.title}`}
           >
