@@ -37,8 +37,8 @@ const ReportCard = memo(function ReportCard({ report, onDownload, onRemove, badg
     <div className="rounded-3xl border border-line bg-panel p-6">
       <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1">
-          <h3 className="font-serif text-2xl font-bold text-ink">{report.title}</h3>
-          <p className="text-xs text-muted">{formatDateTimeLocal(report.createdAt)}</p>
+          <h3 className="wrap-break-word font-serif text-xl font-bold text-ink sm:text-2xl">{report.title}</h3>
+          <p className="wrap-break-word text-xs text-muted">{formatDateTimeLocal(report.createdAt)}</p>
         </div>
         <div className="flex w-full gap-2 sm:w-auto">
           <button
@@ -85,14 +85,14 @@ const ReportCard = memo(function ReportCard({ report, onDownload, onRemove, badg
       </div>
 
       {report.findings && report.findings.length > 0 && (
-        <details className="mt-4 cursor-pointer">
+        <details className="mt-4">
           <summary className="text-sm font-semibold text-ink">View findings</summary>
           <p className="mt-2 rounded-2xl border border-dashed border-line bg-panel-strong px-3 py-2 text-xs text-muted">
             These are the headline findings only. Download the report to read the full reasoning, clause-by-clause evidence, and recommended edits.
           </p>
           <ul className="mt-3 space-y-2">
             {report.findings.map((finding) => (
-              <li key={finding.id} className="text-xs text-muted pl-4 border-l border-line">
+              <li key={finding.id} className="border-l border-line pl-4 text-xs text-muted wrap-break-word">
                 <strong>{finding.category}:</strong> {finding.evidence}
               </li>
             ))}

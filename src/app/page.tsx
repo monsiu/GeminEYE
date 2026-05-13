@@ -1057,8 +1057,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
-        <section className="paper-hero rounded-3xl border border-line p-8 md:p-10 soft-shadow rise-in">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:gap-10 sm:px-6 sm:py-12">
+        <section className="paper-hero rounded-3xl border border-line p-5 sm:p-8 md:p-10 soft-shadow rise-in">
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="flex flex-col gap-5">
               <h2 className="flex items-center gap-2 font-serif text-2xl font-semibold tracking-tight text-muted">
@@ -1067,7 +1067,7 @@ export default function Home() {
                   GeminEYE
                 </span>
               </h2>
-              <h1 className="font-serif text-4xl text-ink md:text-5xl">
+              <h1 className="font-serif text-3xl leading-tight text-ink sm:text-4xl md:text-5xl">
                 Review contracts with confidence.
               </h1>
               <p className="max-w-xl text-base text-muted">
@@ -1108,7 +1108,7 @@ export default function Home() {
                 <p className="text-[11px] text-muted">
                   Hover or tap a label to see what it means.
                 </p>
-                <div ref={reviewAreasRef} className="grid grid-cols-2 gap-3 text-xs text-muted md:grid-cols-3">
+                <div ref={reviewAreasRef} className="grid grid-cols-1 gap-3 text-xs text-muted sm:grid-cols-2 md:grid-cols-3">
                   {REVIEW_AREAS.map((area) => (
                     <div key={area.label} className="relative">
                       <button
@@ -1134,7 +1134,7 @@ export default function Home() {
                       <div
                         id={`review-area-tip-${area.label.toLowerCase()}`}
                         role="tooltip"
-                        className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-52 -translate-x-1/2 rounded-xl border border-line bg-panel p-2 text-left text-[11px] normal-case tracking-normal text-ink shadow-lg transition duration-150 ${
+                        className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-[min(13rem,calc(100vw-2rem))] max-w-52 -translate-x-1/2 rounded-xl border border-line bg-panel p-2 text-left text-[11px] normal-case tracking-normal text-ink shadow-lg transition duration-150 ${
                           activeReviewArea === area.label
                             ? "visible translate-y-0 opacity-100"
                             : "invisible -translate-y-1 opacity-0"
@@ -1239,7 +1239,7 @@ export default function Home() {
         <section className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
           <details className="group flex flex-col rounded-3xl border border-line bg-panel p-6" open>
             <summary className="cursor-pointer list-none text-base font-semibold text-ink">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-2">
                   <span aria-hidden="true" className="text-xs text-muted group-open:hidden">▶</span>
                   <span aria-hidden="true" className="hidden text-xs text-muted group-open:inline">▼</span>
@@ -1251,7 +1251,7 @@ export default function Home() {
               </div>
             </summary>
             <Suspense fallback={<SkeletonCard />}>
-              <pre className="mt-4 flex-1 overflow-y-auto whitespace-pre-wrap rounded-2xl border border-line bg-white p-4 text-xs text-muted">
+              <pre className="mt-4 flex-1 overflow-x-auto overflow-y-auto whitespace-pre-wrap wrap-break-word rounded-2xl border border-line bg-white p-4 text-xs text-muted">
                 {contractText.trim().length > 0
                   ? contractText
                   : "Upload a contract to preview extracted text."}
@@ -1260,7 +1260,7 @@ export default function Home() {
           </details>
 
           <div className="rounded-3xl border border-line bg-panel p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted">
                   GeminEYE memo
@@ -1269,7 +1269,7 @@ export default function Home() {
                   Investigator memo
                 </h2>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${riskScoreTone}`}>
                   {riskScoreLabel}
                 </span>
@@ -1344,8 +1344,8 @@ export default function Home() {
                 </h3>
                 {memo.findings.map((item) => (
                   <div key={item.id} className="rounded-2xl border border-line bg-white p-4">
-                    <div className="flex items-center justify-between text-xs text-muted">
-                      <span>{item.id}</span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+                      <span className="wrap-break-word">{item.id}</span>
                       <span className={`rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${riskTone(item.risk)}`}>
                         {item.risk}
                       </span>
@@ -1366,7 +1366,7 @@ export default function Home() {
           </div>
         </section>
 
-        <p className="px-1 text-center text-[11px] leading-5 text-muted">
+        <p className="px-1 text-center text-[11px] leading-5 text-muted wrap-break-word">
           GeminEYE provides informational contract review support only and does not provide legal advice.
           It should not be used as a substitute for a qualified attorney or formal legal review.
         </p>

@@ -195,21 +195,21 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <main className="mx-auto w-full max-w-6xl px-6 py-12">
-        <div className="paper-hero rounded-3xl border border-line p-8 md:p-10 soft-shadow">
-          <div className="flex items-center justify-between">
+      <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+        <div className="paper-hero rounded-3xl border border-line p-5 sm:p-8 md:p-10 soft-shadow">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="font-serif text-3xl font-semibold">Report dashboard</h1>
               <p className="mt-2 text-sm text-muted">View and download previously generated GeminEYE reports.</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <button onClick={clearAllReports} className="button-pop rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Clear all</button>
               <a href="/" className="button-pop rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Back to Analyzer</a>
             </div>
           </div>
         </div>
 
-        <section className="mt-8 rounded-3xl border border-line bg-panel p-6">
+        <section className="mt-8 rounded-3xl border border-line bg-panel p-4 sm:p-6">
           {reports.length === 0 ? (
             <div className="text-center py-12">
               <h3 className="text-ink font-semibold mb-2">No saved reports yet</h3>
@@ -218,17 +218,17 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
-              <div className="mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap items-center gap-3">
                   <label className="text-sm text-muted">Filter:</label>
-                  <select defaultValue={filteredRisk} onChange={(e) => debouncedFilterRisk(e.target.value)} className="rounded-md border border-line bg-white px-3 py-1 text-sm">
+                  <select defaultValue={filteredRisk} onChange={(e) => debouncedFilterRisk(e.target.value)} className="w-full rounded-md border border-line bg-white px-3 py-1 text-sm sm:w-auto">
                     <option>All</option>
                     <option>High</option>
                     <option>Moderate</option>
                     <option>Lower</option>
                   </select>
-                  <label className="ml-4 text-sm text-muted">Sort:</label>
-                  <select defaultValue={sortMethod} onChange={(e) => debouncedSortBy(e.target.value)} className="rounded-md border border-line bg-white px-3 py-1 text-sm">
+                  <label className="text-sm text-muted">Sort:</label>
+                  <select defaultValue={sortMethod} onChange={(e) => debouncedSortBy(e.target.value)} className="w-full rounded-md border border-line bg-white px-3 py-1 text-sm sm:w-auto">
                     <option value="newest">Newest</option>
                     <option value="oldest">Oldest</option>
                     <option value="score-high">Score (high)</option>
@@ -250,7 +250,7 @@ export default function DashboardPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 pt-6 border-t border-line">
+                <div className="flex flex-wrap items-center justify-center gap-2 border-t border-line pt-6">
                   <button
                     onClick={() => { setCurrentPage(1); restoreScrollPosition(); }}
                     disabled={currentPage === 1}
@@ -293,18 +293,18 @@ export default function DashboardPage() {
         </div>
 
         {showUndo && deletedReport ? (
-          <div className="fixed right-6 bottom-6 z-60 flex items-center gap-4 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar">
+          <div className="fixed inset-x-3 bottom-4 z-60 flex max-w-xl flex-wrap items-center gap-3 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar sm:inset-x-auto sm:right-6 sm:bottom-6">
             <style dangerouslySetInnerHTML={{ __html: SNACKBAR_CSS }} />
-            <div className="text-sm text-ink">Deleted "{deletedReport.title}"</div>
+            <div className="min-w-0 flex-1 wrap-break-word text-sm text-ink">Deleted "{deletedReport.title}"</div>
             <button onClick={undoDelete} className="button-pop rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Undo</button>
             <button onClick={() => { setShowUndo(false); setDeletedReport(null); if (undoTimerRef.current) { window.clearTimeout(undoTimerRef.current); undoTimerRef.current = null; } }} className="button-pop rounded-full border border-line bg-white px-3 py-1 text-xs text-muted transition hover:border-accent hover:text-accent">Dismiss</button>
           </div>
         ) : null}
 
         {showBulkUndo && deletedReportsBulk && deletedReportsBulk.length > 0 ? (
-          <div className="fixed right-6 bottom-6 z-60 flex items-center gap-4 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar">
+          <div className="fixed inset-x-3 bottom-4 z-60 flex max-w-xl flex-wrap items-center gap-3 rounded-lg border border-line bg-white px-4 py-3 shadow-lg gemineye-snackbar sm:inset-x-auto sm:right-6 sm:bottom-6">
             <style dangerouslySetInnerHTML={{ __html: SNACKBAR_CSS }} />
-            <div className="text-sm text-ink">Cleared {deletedReportsBulk.length} reports</div>
+            <div className="min-w-0 flex-1 wrap-break-word text-sm text-ink">Cleared {deletedReportsBulk.length} reports</div>
             <button onClick={undoClearAll} className="rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-ink transition hover:border-accent hover:text-accent">Undo</button>
             <button onClick={() => { setShowBulkUndo(false); setDeletedReportsBulk(null); if (bulkUndoTimerRef.current) { window.clearTimeout(bulkUndoTimerRef.current); bulkUndoTimerRef.current = null; } }} className="rounded-full border border-line bg-white px-3 py-1 text-xs text-muted">Dismiss</button>
           </div>
