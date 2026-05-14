@@ -4,6 +4,18 @@
 
 Built for legal teams, compliance officers, and contract negotiators who need intelligent contract analysis powered by Gemini 3.1 Pro Preview.
 
+## Hackathon Tracks Covered
+
+GeminEYE now maps directly to three of the hackathon tracks:
+
+- **Track 1: Agent Security & AI Governance** - prompt-injection detection, moderation guardrails, redaction, rate limiting, and a local audit trail of blocked and allowed analysis events.
+- **Track 2: AI Agents with Google AI Studio** - Gemini-powered contract analysis, long-context document processing, structured memo generation, and investigator-style reasoning for enterprise workflows.
+- **Track 4: Data & Intelligence** - contract/document intelligence over uploaded files, extracted findings, dashboard analytics, and structured risk insights that turn unstructured text into actionable intelligence.
+
+The project is primarily positioned for **Track 1** with strong **Track 2** and **Track 4** fit because it combines Gemini reasoning, document intelligence, and a trust layer that logs and surfaces security outcomes.
+
+The demo also includes a visible blocked-rate metric and an exportable security audit trail, which makes the guardrail impact easy to show  .
+
 ## Hackathon Disclosure
 
 This project uses **Gemini 3.1 Pro Preview via a proxy (AI/ML API)**. While the underlying model is Gemini, requests are routed through the proxy rather than directly to the Gemini API.
@@ -26,6 +38,8 @@ GeminEYE is provided for informational and educational purposes only. It does no
 - **Structured memo output** - Narrative, summary, and granular findings with recommendations
 - **Risk scoring** - Overall risk score on a 0–10 scale
 - **Real-time analysis** - Powered by Gemini 3.1 Pro Preview via AI/ML API
+- **Guardrails and governance** - Prompt-injection detection, moderation, redaction, and rate limiting
+- **Security audit trail** - Local event log for allowed, blocked, fallback, and error outcomes
 - **Fallback support** - Sample memos when API is unavailable
 
 ---

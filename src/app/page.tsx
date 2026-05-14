@@ -22,6 +22,15 @@ type MemoPayload = {
 
 type SavedFinding = MemoFinding;
 
+type SecurityEvent = {
+  id: string;
+  outcome: "allowed" | "blocked" | "fallback" | "error";
+  reason: string;
+  contractTitle: string;
+  createdAt: string;
+  blockedTerms?: string[];
+};
+
 const REPORT_LOGO = `
 <svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#0f766e" fill-rule="evenodd"/>
@@ -1220,6 +1229,7 @@ export default function Home() {
 
     setIsLoading(true);
     setError(null);
+    let securityEventLogged = false;
 
     try {
       // Check cache first (sessionStorage)
@@ -1265,6 +1275,13 @@ export default function Home() {
             });
           }
 
+          saveSecurityEvent({
+            outcome: resolvedFallback ? "fallback" : "allowed",
+            reason: data.error ? data.error : "cached-analysis",
+            contractTitle: resolvedContractTitle,
+          });
+          securityEventLogged = true;
+
           setHasAnalysisResult(true);
           return;
         }
@@ -1280,7 +1297,40 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Analysis failed.");
+        let message = `Analysis failed (${response.status}).`;
+        let blockedTerms: string[] = [];
+        try {
+          const errorData = (await response.json()) as { error?: string };
+          blockedTerms = (errorData as { blockedTerms?: string[] })?.blockedTerms ?? [];
+          if (errorData?.error) {
+            message = errorData.error;
+          }
+        } catch {
+          try {
+            const fallbackText = await response.text();
+            if (fallbackText.trim()) {
+              message = fallbackText.trim();
+            }
+          } catch {
+            // Keep the default status-based message.
+          }
+        }
+
+        const lowerMessage = message.toLowerCase();
+        const blockedOutcome: SecurityEvent["outcome"] =
+          lowerMessage.includes("moderation") || lowerMessage.includes("blocked") || lowerMessage.includes("rate limit")
+            ? "blocked"
+            : "error";
+
+        saveSecurityEvent({
+          outcome: blockedOutcome,
+          reason: message,
+          contractTitle,
+          blockedTerms,
+        });
+        securityEventLogged = true;
+
+        throw new Error(message);
       }
 
       const data = (await response.json()) as {
@@ -1334,6 +1384,13 @@ export default function Home() {
         });
       }
 
+      saveSecurityEvent({
+        outcome: resolvedFallback ? "fallback" : "allowed",
+        reason: data.error ? data.error : "analysis-complete",
+        contractTitle: resolvedContractTitle,
+      });
+      securityEventLogged = true;
+
       setHasAnalysisResult(true);
       if (typeof data.configured === "boolean") {
         setApiStatus(data.configured ? "configured" : "missing");
@@ -1345,6 +1402,13 @@ export default function Home() {
         setError(data.error);
       }
     } catch (err) {
+      if (!securityEventLogged) {
+        saveSecurityEvent({
+          outcome: "error",
+          reason: err instanceof Error ? err.message : "Analysis failed.",
+          contractTitle: contractTitle.trim() || "Untitled contract",
+        });
+      }
       setError(err instanceof Error ? err.message : "Analysis failed.");
     } finally {
       setIsLoading(false);
@@ -1373,6 +1437,22 @@ export default function Home() {
       // (localStorage may be disabled in some private modes)
       // eslint-disable-next-line no-console
       console.warn("Failed to save report to storage", e);
+    }
+  }
+
+  function saveSecurityEvent(event: Omit<SecurityEvent, "id" | "createdAt">) {
+    try {
+      const key = "gemineye_security_events";
+      const raw = localStorage.getItem(key) || "[]";
+      const arr = JSON.parse(raw) as Array<SecurityEvent>;
+      arr.unshift({
+        ...event,
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        createdAt: new Date().toISOString(),
+      });
+      localStorage.setItem(key, JSON.stringify(arr.slice(0, 500)));
+    } catch {
+      // ignore storage errors
     }
   }
 
